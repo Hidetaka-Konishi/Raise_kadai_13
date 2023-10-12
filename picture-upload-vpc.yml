@@ -1,0 +1,193 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "VPC"
+
+Parameters:
+  Prefix:
+    Type: String
+    Description: Fill in the part that hits the prefix to give a unique name.
+
+Resources:
+    EC2VPC:
+        Type: "AWS::EC2::VPC"
+        Properties:
+            CidrBlock: "10.0.0.0/16"
+            EnableDnsSupport: true
+            EnableDnsHostnames: true
+            InstanceTenancy: "default"
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub ${Prefix}-ec2vpc
+
+    EC2Subnet1:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            AvailabilityZone: !GetAtt EC2Subnet2.AvailabilityZone
+            CidrBlock: "10.0.16.0/20"
+            VpcId: !Ref EC2VPC
+            MapPublicIpOnLaunch: false
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub "raise10-subnet-public2-${EC2Subnet2.AvailabilityZone}"
+
+    EC2Subnet2:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            AvailabilityZone: !Sub "${AWS::Region}b"
+            CidrBlock: "10.0.144.0/20"
+            VpcId: !Ref EC2VPC
+            MapPublicIpOnLaunch: false
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub "raise10-subnet-private2-${AWS::Region}b"
+
+    EC2Subnet3:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            AvailabilityZone: !GetAtt EC2Subnet4.AvailabilityZone
+            CidrBlock: "10.0.128.0/20"
+            VpcId: !Ref EC2VPC
+            MapPublicIpOnLaunch: false
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub "raise10-subnet-private1-${EC2Subnet4.AvailabilityZone}"
+
+    EC2Subnet4:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            AvailabilityZone: !Sub "${AWS::Region}a"
+            CidrBlock: "10.0.0.0/20"
+            VpcId: !Ref EC2VPC
+            MapPublicIpOnLaunch: false
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub "raise10-subnet-public1-${AWS::Region}a"
+
+    EC2InternetGateway:
+        Type: "AWS::EC2::InternetGateway"
+        Properties:
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub ${Prefix}-igw
+
+    EC2DHCPOptions:
+        Type: "AWS::EC2::DHCPOptions"
+        Properties:
+            DomainName: "ec2.internal" 
+            DomainNameServers:
+                - AmazonProvidedDNS
+
+    EC2VPCDHCPOptionsAssociation:
+        Type: "AWS::EC2::VPCDHCPOptionsAssociation"
+        Properties:
+            DhcpOptionsId: !Ref EC2DHCPOptions
+            VpcId: !Ref EC2VPC
+
+    EC2RouteTable1:
+        Type: "AWS::EC2::RouteTable"
+        Properties:
+            VpcId: !Ref EC2VPC
+
+    EC2RouteTable2:
+        Type: "AWS::EC2::RouteTable"
+        Properties:
+            VpcId: !Ref EC2VPC
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub "raise10-rtb-private1-${EC2Subnet3.AvailabilityZone}"
+
+    EC2RouteTable3:
+        Type: "AWS::EC2::RouteTable"
+        Properties:
+            VpcId: !Ref EC2VPC
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub "raise10-rtb-private2-${EC2Subnet1.AvailabilityZone}"
+
+    EC2RouteTable4:
+        Type: "AWS::EC2::RouteTable"
+        Properties:
+            VpcId: !Ref EC2VPC
+            Tags: 
+              - 
+                Key: "Name"
+                Value: !Sub ${Prefix}-routetable
+
+    EC2Route:
+        Type: "AWS::EC2::Route"
+        Properties:
+            DestinationCidrBlock: "0.0.0.0/0"
+            GatewayId: !Ref EC2InternetGateway
+            RouteTableId: !Ref EC2RouteTable4
+
+    EC2VPCGatewayAttachment:
+        Type: "AWS::EC2::VPCGatewayAttachment"
+        Properties:
+            InternetGatewayId: !Ref EC2InternetGateway
+            VpcId: !Ref EC2VPC
+
+    EC2SubnetRouteTableAssociation1:
+        Type: "AWS::EC2::SubnetRouteTableAssociation"
+        Properties:
+            RouteTableId: !Ref EC2RouteTable4
+            SubnetId: !Ref EC2Subnet4
+
+    EC2SubnetRouteTableAssociation2:
+        Type: "AWS::EC2::SubnetRouteTableAssociation"
+        Properties:
+            RouteTableId: !Ref EC2RouteTable3
+            SubnetId: !Ref EC2Subnet2
+
+    EC2SubnetRouteTableAssociation3:
+        Type: "AWS::EC2::SubnetRouteTableAssociation"
+        Properties:
+            RouteTableId: !Ref EC2RouteTable4
+            SubnetId: !Ref EC2Subnet1
+
+    EC2SubnetRouteTableAssociation4:
+        Type: "AWS::EC2::SubnetRouteTableAssociation"
+        Properties:
+            RouteTableId: !Ref EC2RouteTable2
+            SubnetId: !Ref EC2Subnet3
+
+    VPCIDParameter:
+        Type: "AWS::SSM::Parameter"
+        Properties: 
+          Name: !Sub "/${Prefix}/VPC-ID"
+          Type: "String"
+          Value: !Ref EC2VPC
+
+    SubnetId1Parameter:
+        Type: "AWS::SSM::Parameter"
+        Properties: 
+          Name: !Sub "/${Prefix}/EC2Subnet1Id"
+          Type: "String"
+          Value: !Ref EC2Subnet1
+
+    SubnetId2Parameter:
+        Type: "AWS::SSM::Parameter"
+        Properties: 
+          Name: !Sub "/${Prefix}/EC2Subnet2Id"
+          Type: "String"
+          Value: !Ref EC2Subnet2
+
+    SubnetId3Parameter:
+        Type: "AWS::SSM::Parameter"
+        Properties: 
+          Name: !Sub "/${Prefix}/EC2Subnet3Id"
+          Type: "String"
+          Value: !Ref EC2Subnet3
+
+    SubnetId4Parameter:
+        Type: "AWS::SSM::Parameter"
+        Properties: 
+          Name: !Sub "/${Prefix}/EC2Subnet4Id"
+          Type: "String"
+          Value: !Ref EC2Subnet4
