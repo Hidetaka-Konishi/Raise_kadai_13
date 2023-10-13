@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "EC2"
+
+Parameters:
+  Prefix:
+    Type: String
+    Description: Fill in the part that hits the prefix to give a unique name.
+  VPCPrefix:
+    Type: String
+    Description: Fill in the prefixes listed in the VPC.
+
+Resources:
+    EC2Instance:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            NetworkInterfaces:
+                - DeviceIndex: "0"
+                  SubnetId: !Sub "{{resolve:ssm:/${VPCPrefix}/EC2Subnet1Id}}"
+            ImageId: "ami-00c6177f250e07ec1"
+            InstanceType: "t2.micro"
+            KeyName: "KrrXp2bKjU3chCVq"
+            AvailabilityZone: !Sub "${AWS::Region}b"
+            Tenancy: "default"
+            EbsOptimized: false
+            SourceDestCheck: true
+            BlockDeviceMappings: 
+                - DeviceName: "/dev/xvda"
+                  Ebs: 
+                      Encrypted: false
+                      VolumeSize: 8
+                      VolumeType: "gp2"
+                      DeleteOnTermination: true
+            Tags: 
+                - Key: "Name"
+                  Value: !Sub ${Prefix}-ec2
+            HibernationOptions: 
+                Configured: false
+            EnclaveOptions: 
+                Enabled: false
+
+    EC2SecurityGroup1:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            GroupDescription: "ec2-securitygroup1"
+            VpcId: !Sub "{{resolve:ssm:/${VPCPrefix}/VPC-ID}}"
+            SecurityGroupIngress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                FromPort: 8080
+                IpProtocol: "tcp"
+                ToPort: 8080
+              - 
+                CidrIp: "59.87.81.226/32"
+                FromPort: 22
+                IpProtocol: "tcp"
+                ToPort: 22
+            SecurityGroupEgress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                IpProtocol: "-1"
+
+    EC2SecurityGroup1Parameter:
+        Type: "AWS::SSM::Parameter"
+        Properties: 
+          Name: !Sub "/${Prefix}/EC2-SecurityGroup1"
+          Type: "String"
+          Value: !Ref EC2SecurityGroup1
+
+    ALBTarget1Parameter:
+        Type: "AWS::SSM::Parameter"
+        Properties: 
+          Name: !Sub "/${Prefix}/alb-target1"
+          Type: "String"
+          Value: !Ref EC2Instance

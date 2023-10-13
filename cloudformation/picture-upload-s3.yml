@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "S3"
+
+Parameters:
+  Prefix:
+    Type: String
+    Description: Fill in the part that hits the prefix to give a unique name.
+
+Resources:
+    S3Bucket:
+        Type: "AWS::S3::Bucket"
+        Properties:
+            BucketName: !Sub ${Prefix}-s3buket
+            BucketEncryption: 
+                ServerSideEncryptionConfiguration: 
+                  - 
+                    ServerSideEncryptionByDefault: 
+                        SSEAlgorithm: "AES256"
+                    BucketKeyEnabled: true
+            CorsConfiguration: 
+                CorsRules: 
+                  - 
+                    AllowedHeaders: 
+                      - "*"
+                    AllowedMethods: 
+                      - "GET"
+                      - "PUT"
+                      - "POST"
+                      - "DELETE"
+                      - "HEAD"
+                    AllowedOrigins: 
+                      - "*"
+            OwnershipControls: 
+                Rules: 
+                  - 
+                    ObjectOwnership: "BucketOwnerEnforced"
+            PublicAccessBlockConfiguration: 
+                BlockPublicAcls: true
+                BlockPublicPolicy: true
+                IgnorePublicAcls: true
+                RestrictPublicBuckets: true
+
+    S3StorageLens:
+        Type: "AWS::S3::StorageLens"
+        Properties:
+            StorageLensConfiguration: 
+                AccountLevel: 
+                    BucketLevel: {}
+                Id: !Sub ${Prefix}-s3-StorageLens
+                IsEnabled: true

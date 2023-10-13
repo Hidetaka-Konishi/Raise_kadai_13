@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "RDS"
+
+Parameters:
+  Prefix:
+    Type: String
+    Description: Fill in the part that hits the prefix to give a unique name.
+  VPCPrefix:
+    Type: String
+    Description: Fill in the prefixes listed in the VPC.
+  EC2Prefix:
+    Type: String
+    Description: Fill in the prefixes listed in the EC2.
+
+Resources:
+    RDSDBInstance:
+        Type: "AWS::RDS::DBInstance"
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+            DBInstanceIdentifier: !Sub ${Prefix}-rds
+            AllocatedStorage: "20"
+            DBInstanceClass: "db.t3.micro"
+            Engine: "mysql"
+            MasterUsername: "admin"
+            MasterUserPassword: '{{resolve:ssm-secure:picture-upload:1}}'
+            PreferredBackupWindow: "08:19-08:49"
+            BackupRetentionPeriod: 1
+            AvailabilityZone: !Sub "${AWS::Region}b"
+            PreferredMaintenanceWindow: "mon:03:52-mon:04:22"
+            MultiAZ: false
+            EngineVersion: "8.0.33"
+            AutoMinorVersionUpgrade: true
+            LicenseModel: "general-public-license"
+            PubliclyAccessible: false
+            StorageType: "gp2"
+            Port: "3306"
+            StorageEncrypted: true
+            KmsKeyId: !Sub "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/623421e8-f259-4d7f-9b9b-f8bc1921d999"
+            CopyTagsToSnapshot: true
+            MonitoringInterval: 0
+            EnableIAMDatabaseAuthentication: false
+            EnablePerformanceInsights: false
+            DeletionProtection: false
+            DBSubnetGroupName: !Ref RDSDBSubnetGroup
+            VPCSecurityGroups: 
+              - !Ref RDSSecurityGroup1
+            DBParameterGroupName: "default.mysql8.0"
+            OptionGroupName: "default:mysql-8-0"
+            CACertificateIdentifier: "rds-ca-2019"
+
+    RDSDBSubnetGroup:
+        Type: "AWS::RDS::DBSubnetGroup"
+        Properties:
+            DBSubnetGroupDescription: "RDS-subnetgroup"
+            DBSubnetGroupName: !Sub ${Prefix}-subnet-group
+            SubnetIds: 
+              - !Sub "{{resolve:ssm:/${VPCPrefix}/EC2Subnet2Id}}"
+              - !Sub "{{resolve:ssm:/${VPCPrefix}/EC2Subnet3Id}}"
+
+    RDSSecurityGroup1:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            GroupDescription: "rds-securitygroup1"
+            VpcId: !Sub "{{resolve:ssm:/${VPCPrefix}/VPC-ID}}"
+            SecurityGroupIngress: 
+              - 
+                SourceSecurityGroupId: !Sub "{{resolve:ssm:/${EC2Prefix}/EC2-SecurityGroup1}}"
+                SourceSecurityGroupOwnerId: !Ref AWS::AccountId
+                Description: "3306 tcp"
+                FromPort: 3306
+                IpProtocol: "tcp"
+                ToPort: 3306
+            SecurityGroupEgress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                IpProtocol: "-1"
