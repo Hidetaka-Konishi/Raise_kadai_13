@@ -1,0 +1,25 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@4.0
+
+jobs:
+  deploy:
+    docker:
+      - image: circleci/python:3.10
+    steps:
+      - checkout
+      - aws-cli/install
+      - run:
+          name: Deploy CloudFormation VPC Stack
+          command: |
+            aws cloudformation deploy \
+              --template-file cloudfomation/picture-upload-vpc.yml \
+              --stack-name raise13-vpc \
+              --parameter-overrides Prefix=raise13-vpc
+              
+workflows:
+  version: 2
+  vpc-deploy:
+    jobs:
+      - deploy
