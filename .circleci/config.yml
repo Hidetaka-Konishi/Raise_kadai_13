@@ -17,6 +17,7 @@ jobs:
               --template-file cloudfomation/picture-upload-vpc.yml \
               --stack-name raise13-vpc \
               --parameter-overrides Prefix=raise13-vpc
+              --region us-east-1
               
 workflows:
   version: 2
