@@ -47,7 +47,8 @@ jobs:
               --template-file cloudformation/picture-upload-rds.yml \
               --stack-name raise13-rds \
               --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
-  
+          no_output_timeout: 20m
+
   deploy-alb:
     executor: my-executor
     steps:
