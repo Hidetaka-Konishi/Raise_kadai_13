@@ -4,7 +4,7 @@ orbs:
   aws-cli: circleci/aws-cli@4.0
 
 jobs:
-  deploy:
+  deploy-vpc:
     docker:
       - image: circleci/python:3.10
     steps:
@@ -20,6 +20,6 @@ jobs:
               
 workflows:
   version: 2
-  vpc-deploy:
+  deploy:
     jobs:
-      - deploy
+      - deploy-vpc
