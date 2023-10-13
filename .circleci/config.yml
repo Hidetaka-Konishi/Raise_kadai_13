@@ -14,7 +14,7 @@ jobs:
           name: Deploy CloudFormation VPC Stack
           command: |
             aws cloudformation deploy \
-              --template-file cloudfomation/picture-upload-vpc.yml \
+              --template-file cloudformation/picture-upload-vpc.yml \
               --stack-name raise13-vpc \
               --parameter-overrides Prefix=raise13-vpc
               
