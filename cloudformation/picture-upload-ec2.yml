@@ -16,6 +16,8 @@ Resources:
             NetworkInterfaces:
                 - DeviceIndex: "0"
                   SubnetId: !Sub "{{resolve:ssm:/${VPCPrefix}/EC2Subnet1Id}}"
+                  GroupSet: 
+                    - !Ref EC2SecurityGroup1
             ImageId: "ami-00c6177f250e07ec1"
             InstanceType: "t2.micro"
             KeyName: "KrrXp2bKjU3chCVq"
