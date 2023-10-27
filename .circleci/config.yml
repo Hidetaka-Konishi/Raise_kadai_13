@@ -75,19 +75,6 @@ jobs:
               --stack-name raise13-s3 \
               --parameter-overrides Prefix=raise13-s3
 
-  deploy-iam:
-    executor: my-executor
-    steps:
-      - checkout
-      - aws-cli/install
-      - run:
-          name: Deploy CloudFormation IAM Stack
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/picture-upload-iam.yml \
-              --stack-name raise13-iam \
-              --parameter-overrides Prefix=raise13-iam
-    
 
 workflows:
   version: 2
@@ -105,7 +92,4 @@ workflows:
             - deploy-rds
       - deploy-s3:
           requires:
-            - deploy-alb
-      - deploy-iam:
-          requires:
-            - deploy-s3      
+            - deploy-alb     
