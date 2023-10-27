@@ -75,6 +75,16 @@ jobs:
               --stack-name raise13-s3 \
               --parameter-overrides Prefix=raise13-s3
 
+  run-ansible:
+    executor: my-executor
+    steps:
+      - checkout
+      - run:
+          name: Install Ansible
+          command: pip install ansible
+      - run:
+          name: Run Ansible Playbook
+          command: ansible-playbook picture_upload_play.yml
 
 workflows:
   version: 2
