@@ -35,6 +35,15 @@ jobs:
               --stack-name raise13-ec2 \
               --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc
 
+      - run:
+          name: Get Public IP of EC2 Instance
+          command: |
+            PUBLIC_IP=$(aws cloudformation describe-stacks \
+              --stack-name raise13-ec2 \
+              --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
+              --output text)
+            echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
+
   deploy-rds:
     executor: my-executor
     steps:
@@ -75,6 +84,21 @@ jobs:
               --stack-name raise13-s3 \
               --parameter-overrides Prefix=raise13-s3
 
+  run-ansible:
+    executor: my-executor
+    steps:
+      - checkout
+      - run:
+          name: Install Ansible
+          command: pip install ansible
+      - run:
+          name: Update Ansible Inventory
+          command: |
+            echo "[your_target_host_or_group]" > ansible/inventory.ini
+            echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
+      - run:
+          name: Run Ansible Playbook
+          command: ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
 
 workflows:
   version: 2
@@ -93,3 +117,6 @@ workflows:
       - deploy-s3:
           requires:
             - deploy-alb     
+      - run-ansible:
+          requires:
+            - deploy-s3
