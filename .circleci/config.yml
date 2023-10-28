@@ -95,7 +95,7 @@ jobs:
           name: Update Ansible Inventory
           command: |
             echo "[your_target_host_or_group]" > ansible/inventory.ini
-            echo "$INSTANCE_PUBLIC_IP >> ansible/inventory.ini
+            echo $INSTANCE_PUBLIC_IP >> ansible/inventory.ini
       - run:
           name: Run Ansible Playbook
           command: ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
