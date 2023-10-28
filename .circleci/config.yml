@@ -88,6 +88,15 @@ jobs:
     executor: my-executor
     steps:
       - checkout
+      - aws-cli/install
+      - run:
+          name: Retrieve Public IP of EC2 Instance
+          command: |
+            PUBLIC_IP=$(aws cloudformation describe-stacks \
+              --stack-name raise13-ec2 \
+              --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
+              --output text)
+            echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
       - run:
           name: Install Ansible
           command: pip install ansible
@@ -99,6 +108,8 @@ jobs:
       - run:
           name: Run Ansible Playbook
           command: ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
+
+
 
 workflows:
   version: 2
