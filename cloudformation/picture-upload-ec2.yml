@@ -21,7 +21,7 @@ Resources:
                   AssociatePublicIpAddress: true
             ImageId: "ami-00c6177f250e07ec1"
             InstanceType: "t2.micro"
-            KeyName: "KrrXp2bKjU3chCVq"
+            KeyName: "CircleCI"
             AvailabilityZone: !Sub "${AWS::Region}b"
             Tenancy: "default"
             EbsOptimized: false
@@ -53,7 +53,7 @@ Resources:
                 IpProtocol: "tcp"
                 ToPort: 8080
               - 
-                CidrIp: "59.87.81.226/32"
+                CidrIp: "0.0.0.0/0"
                 FromPort: 22
                 IpProtocol: "tcp"
                 ToPort: 22
