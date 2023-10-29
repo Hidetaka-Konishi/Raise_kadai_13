@@ -60,16 +60,16 @@ jobs:
                           --stack-name raise13-ec2 \
                           --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
                           --output text)
+            echo "$EC2_ACCESS_PRIVATE_KEY" > temporary_key_file
 
             # CircleCIのAPIを使用してSSHキーを追加
             curl -X POST https://circleci.com/api/v1.1/project/gh/$CIRCLECI_USERNAME/$CIRCLECI_PROJECT/ssh-key \
               -H 'Content-Type: application/json' \
               -H 'Circle-Token: '$CIRCLECI_TOKEN \
-              -d '{
+              -d @<(echo '{
               "hostname": "'$EC2_PUBLIC_IP'",
-              "private_key": "'$EC2_ACCESS_PRIVATE_KEY'"
-            }'
-
+              "private_key": "'"$(cat temporary_key_file)"'"
+            }')
 
   deploy-rds:
     executor: my-executor
