@@ -62,7 +62,7 @@ jobs:
                           --output text)
 
             # CircleCIのAPIを使用してSSHキーを追加
-            curl -X POST https://circleci.com/api/v2/project/gh/$CIRCLECI_USERNAME/$CIRCLECI_PROJECT/ssh-key \
+            curl -X POST https://circleci.com/api/v1.1/project/gh/$CIRCLECI_USERNAME/$CIRCLECI_PROJECT/ssh-key \
               -H 'Content-Type: application/json' \
               -H 'Circle-Token: '$CIRCLECI_TOKEN \
               -d '{
