@@ -22,6 +22,7 @@ jobs:
               --stack-name raise13-vpc \
               --parameter-overrides Prefix=raise13-vpc
 
+
   deploy-ec2:
     executor: my-executor
     steps:
@@ -44,6 +45,32 @@ jobs:
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
 
+
+  add-ssh-key:
+    executor: my-executor
+    steps:
+      - run:
+          name: Add SSH Key
+          command: |
+            # 環境変数を設定
+            export CIRCLECI_TOKEN="${SSH_KEY}"
+            export CIRCLECI_PROJECT="auto-aws-13"
+            export CIRCLECI_USERNAME="Hidetaka-Konishi"
+            export EC2_PUBLIC_IP=$(aws cloudformation describe-stacks \
+                          --stack-name raise13-ec2 \
+                          --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
+                          --output text)
+
+            # CircleCIのAPIを使用してSSHキーを追加
+            curl -X POST https://circleci.com/api/v2/project/gh/$CIRCLECI_USERNAME/$CIRCLECI_PROJECT/ssh-key \
+              -H 'Content-Type: application/json' \
+              -H 'Circle-Token: '$CIRCLECI_TOKEN \
+              -d '{
+              "hostname": "'$EC2_PUBLIC_IP'",
+              "private_key": "'$EC2_ACCESS_PRIVATE_KEY'"
+            }'
+
+
   deploy-rds:
     executor: my-executor
     steps:
@@ -58,6 +85,7 @@ jobs:
               --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
           no_output_timeout: 20m
 
+
   deploy-alb:
     executor: my-executor
     steps:
@@ -71,6 +99,7 @@ jobs:
               --stack-name raise13-alb \
               --parameter-overrides Prefix=raise13-alb VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
 
+
   deploy-s3:
     executor: my-executor
     steps:
@@ -83,6 +112,7 @@ jobs:
               --template-file cloudformation/picture-upload-s3.yml \
               --stack-name raise13-s3 \
               --parameter-overrides Prefix=raise13-s3
+
 
   run-ansible:
     executor: my-executor
@@ -109,8 +139,6 @@ jobs:
           name: Run Ansible Playbook
           command: ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
 
-
-
 workflows:
   version: 2
   deploy:
@@ -119,9 +147,12 @@ workflows:
       - deploy-ec2:
           requires:
             - deploy-vpc
-      - deploy-rds:
+      - add-ssh-key:
           requires:
             - deploy-ec2
+      - deploy-rds:
+          requires:
+            - add-ssh-key
       - deploy-alb:
           requires:
             - deploy-rds
