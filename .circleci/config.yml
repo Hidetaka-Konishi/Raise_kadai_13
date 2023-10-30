@@ -137,8 +137,11 @@ jobs:
             echo $INSTANCE_PUBLIC_IP >> ansible/inventory.ini
       - run:
           name: Run Ansible Playbook
-          command: ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
+          command: |
+            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml \
+              -e 'ansible_ssh_common_args=-o StrictHostKeyChecking=no'
 
+  
 workflows:
   version: 2
   deploy:
