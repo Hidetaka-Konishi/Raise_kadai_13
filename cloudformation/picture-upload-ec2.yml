@@ -21,7 +21,7 @@ Resources:
                   AssociatePublicIpAddress: true
             ImageId: "ami-00c6177f250e07ec1"
             InstanceType: "t2.micro"
-            KeyName: "CircleCI"
+            KeyName: "id_ed25519"
             AvailabilityZone: !Sub "${AWS::Region}b"
             Tenancy: "default"
             EbsOptimized: false
