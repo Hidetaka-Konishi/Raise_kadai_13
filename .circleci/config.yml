@@ -138,9 +138,8 @@ jobs:
       - run:
           name: Run Ansible Playbook
           command: |
-            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml \
-              --ssh-common-args='-o StrictHostKeyChecking=no'
-
+            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
+            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
 
   
 workflows:
