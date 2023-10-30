@@ -126,7 +126,7 @@ jobs:
       private-key:
         description: |
           SSH private key file.
-        type: env_var_name
+        type: string
         default: ~/.ssh/id_ed25519
     steps:
       - checkout
