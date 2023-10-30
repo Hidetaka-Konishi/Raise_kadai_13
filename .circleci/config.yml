@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   aws-cli: circleci/aws-cli@4.0
+  ansible-playbook: orbss/ansible-playbook@0.0.5  # ansible-playbook orbを追加
 
 executors:
   my-executor:
@@ -116,6 +117,17 @@ jobs:
 
   run-ansible:
     executor: my-executor
+    parameters:  # パラメータを追加
+      inventory:
+        description: |
+          Ansible inventory file.
+        type: string
+        default: ansible/inventory.ini
+      private-key:
+        description: |
+          SSH private key file.
+        type: env_var_name
+        default: ~/.ssh/id_ed25519
     steps:
       - checkout
       - aws-cli/install
@@ -127,21 +139,14 @@ jobs:
               --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
-      - run:
-          name: Install Ansible
-          command: pip install ansible
-      - run:
-          name: Update Ansible Inventory
-          command: |
-            echo "[your_target_host_or_group]" > ansible/inventory.ini
-            echo $INSTANCE_PUBLIC_IP >> ansible/inventory.ini
-      - run:
-          name: Run Ansible Playbook
-          command: |
-            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
-            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
+      - ansible-playbook/install:  # ansible-playbook orbのinstall stepを利用
+          version: '2.9.6'
+      - ansible-playbook/playbook:  # ansible-playbook orbのplaybook stepを利用
+          inventory: <<parameters.inventory>>
+          playbook: ansible/picture_upload_play.yml
+          private-key: <<parameters.private-key>>
 
-  
+
 workflows:
   version: 2
   deploy:
