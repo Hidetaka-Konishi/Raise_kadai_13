@@ -121,13 +121,13 @@ jobs:
       inventory:
         description: |
           Ansible inventory file.
-        type: string
-        default: ansible/inventory.ini
+        type: env_var_name
+        default: ANSIBLE_INVENTORY_PATH
       private-key:
         description: |
           SSH private key file.
         type: env_var_name
-        default: ~/.ssh/id_ed25519
+        default: SSH_KEY_PATH
     steps:
       - checkout
       - aws-cli/install
