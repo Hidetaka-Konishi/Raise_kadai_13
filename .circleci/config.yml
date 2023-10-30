@@ -139,6 +139,21 @@ jobs:
               --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
+      - run:
+          name: Prepare Ansible Inventory File
+          command: |
+            if [ -n "`echo $ANSIBLE_INVENTORY_PATH`" ]; then
+              if [ ! -d ".ansible-playbook-circleci" ]; then
+                mkdir .ansible-playbook-circleci
+              fi
+              echo $ANSIBLE_INVENTORY_PATH > .ansible-playbook-circleci/inventory-file
+              echo "-i .ansible-playbook-circleci/inventory-file" > .ansible-playbook-circleci/inventory
+            else
+              if [ ! -d ".ansible-playbook-circleci" ]; then
+                mkdir .ansible-playbook-circleci
+              fi
+              touch .ansible-playbook-circleci/inventory
+            fi
       - ansible-playbook/install:  # ansible-playbook orbのinstall stepを利用
           version: '2.9.6'
       - ansible-playbook/playbook:  # ansible-playbook orbのplaybook stepを利用
