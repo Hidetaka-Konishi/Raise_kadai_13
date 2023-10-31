@@ -146,7 +146,12 @@ jobs:
               if [ ! -d ".ansible-playbook-circleci" ]; then
                 mkdir .ansible-playbook-circleci
               fi
-              echo $ANSIBLE_INVENTORY_PATH > .ansible-playbook-circleci/inventory-file
+              if echo "$ANSIBLE_INVENTORY_PATH" | base64 -d > /dev/null 2>&1; then
+                echo $ANSIBLE_INVENTORY_PATH | base64 -d > .ansible-playbook-circleci/inventory-file
+              else
+                echo "Invalid Base64 input for ANSIBLE_INVENTORY_PATH"
+                exit 1
+              fi
               echo "-i .ansible-playbook-circleci/inventory-file" > .ansible-playbook-circleci/inventory
             else
               if [ ! -d ".ansible-playbook-circleci" ]; then
@@ -154,6 +159,7 @@ jobs:
               fi
               touch .ansible-playbook-circleci/inventory
             fi
+
       - ansible-playbook/install:  # ansible-playbook orbのinstall stepを利用
           version: '2.9.6'
       - ansible-playbook/playbook:  # ansible-playbook orbのplaybook stepを利用
