@@ -96,7 +96,7 @@ jobs:
       - aws-cli/install
       - add_ssh_keys:
           fingerprints:
-            - "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
+            - "40:55:a1:21:0e:d7:5d:33:19:19:c8:72:99:9d:e5:52"
       - run:
           name: Retrieve Public IP of EC2 Instance
           command: |
