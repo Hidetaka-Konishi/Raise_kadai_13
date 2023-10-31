@@ -46,31 +46,6 @@ jobs:
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
 
 
-  add-ssh-key:
-    executor: my-executor
-    steps:
-      - run:
-          name: Add SSH Key
-          command: |
-            # 環境変数を設定
-            export CIRCLECI_TOKEN="${SSH_KEY}"
-            export CIRCLECI_PROJECT="auto-aws-13"
-            export CIRCLECI_USERNAME="Hidetaka-Konishi"
-            export EC2_PUBLIC_IP=$(aws cloudformation describe-stacks \
-                          --stack-name raise13-ec2 \
-                          --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
-                          --output text)
-            echo "$EC2_ACCESS_PRIVATE_KEY" > temporary_key_file
-
-            # CircleCIのAPIを使用してSSHキーを追加
-            curl -X POST https://circleci.com/api/v1.1/project/gh/$CIRCLECI_USERNAME/$CIRCLECI_PROJECT/ssh-key \
-              -H 'Content-Type: application/json' \
-              -H 'Circle-Token: '$CIRCLECI_TOKEN \
-              -d @<(echo '{
-              "hostname": "'$EC2_PUBLIC_IP'",
-              "private_key": "'"$(cat temporary_key_file)"'"
-            }')
-
   deploy-rds:
     executor: my-executor
     steps:
@@ -119,6 +94,9 @@ jobs:
     steps:
       - checkout
       - aws-cli/install
+      - add_ssh_keys:
+          fingerprints:
+            - "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
           name: Retrieve Public IP of EC2 Instance
           command: |
@@ -150,12 +128,9 @@ workflows:
       - deploy-ec2:
           requires:
             - deploy-vpc
-      - add-ssh-key:
-          requires:
-            - deploy-ec2
       - deploy-rds:
           requires:
-            - add-ssh-key
+            - deploy-ec2
       - deploy-alb:
           requires:
             - deploy-rds
