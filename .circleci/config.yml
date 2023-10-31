@@ -7,11 +7,11 @@ orbs:
 executors:
   my-executor:
     docker:
-      - image: circleci/python:3.10
+      - image: circleci/python
 
 jobs:
   deploy-vpc:
-    executor: my-executor
+    executor: aws-cli/default
     steps:
       - checkout
       - aws-cli/install
@@ -25,7 +25,7 @@ jobs:
 
 
   deploy-ec2:
-    executor: my-executor
+    executor: aws-cli/default
     steps:
       - checkout
       - aws-cli/install
@@ -48,7 +48,7 @@ jobs:
 
 
   add-ssh-key:
-    executor: my-executor
+    executor: aws-cli/default
     steps:
       - run:
           name: Add SSH Key
@@ -72,8 +72,9 @@ jobs:
               "private_key": "'"$(cat temporary_key_file)"'"
             }')
 
+
   deploy-rds:
-    executor: my-executor
+    executor: aws-cli/default
     steps:
       - checkout
       - aws-cli/install
@@ -88,7 +89,7 @@ jobs:
 
 
   deploy-alb:
-    executor: my-executor
+    executor: aws-cli/default
     steps:
       - checkout
       - aws-cli/install
@@ -102,7 +103,7 @@ jobs:
 
 
   deploy-s3:
-    executor: my-executor
+    executor: aws-cli/default
     steps:
       - checkout
       - aws-cli/install
