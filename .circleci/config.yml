@@ -154,12 +154,13 @@ jobs:
               fi
               touch .ansible-playbook-circleci/inventory
             fi
-            - ansible-playbook/install:  # ansible-playbook orbのinstall stepを利用
-                version: '2.9.6'
-            - ansible-playbook/playbook:  # ansible-playbook orbのplaybook stepを利用
-                inventory: <<parameters.inventory>>
-                playbook: ansible/picture_upload_play.yml
-                private-key: <<parameters.private-key>>
+      - ansible-playbook/install:  # ansible-playbook orbのinstall stepを利用
+          version: '2.9.6'
+      - ansible-playbook/playbook:  # ansible-playbook orbのplaybook stepを利用
+          inventory: <<parameters.inventory>>
+          playbook: ansible/picture_upload_play.yml
+          private-key: <<parameters.private-key>>
+
 
 
 workflows:
