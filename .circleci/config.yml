@@ -117,7 +117,7 @@ jobs:
 
   run-ansible:
     executor: my-executor
-    parameters:  # パラメータを追加
+    parameters:
       inventory:
         description: |
           Ansible inventory file.
@@ -142,31 +142,23 @@ jobs:
       - run:
           name: Prepare Ansible Inventory File
           command: |
-            if [ -n "`echo $ANSIBLE_INVENTORY_PATH`" ]; then
-              if [ ! -d ".ansible-playbook-circleci" ]; then
-                mkdir .ansible-playbook-circleci
-              fi
-              if echo "$ANSIBLE_INVENTORY_PATH" | base64 -d > /dev/null 2>&1; then
-                echo $ANSIBLE_INVENTORY_PATH | base64 -d > .ansible-playbook-circleci/inventory-file
-              else
-                echo "Invalid Base64 input for ANSIBLE_INVENTORY_PATH"
-                exit 1
-              fi
-              echo "-i .ansible-playbook-circleci/inventory-file" > .ansible-playbook-circleci/inventory
-            else
-              if [ ! -d ".ansible-playbook-circleci" ]; then
-                mkdir .ansible-playbook-circleci
-              fi
-              touch .ansible-playbook-circleci/inventory
+            if [ ! -d ".ansible-playbook-circleci" ]; then
+              mkdir .ansible-playbook-circleci
             fi
 
-      - ansible-playbook/install:  # ansible-playbook orbのinstall stepを利用
+            if echo "$ANSIBLE_INVENTORY_PATH" | base64 -d > /dev/null 2>&1; then
+              echo $ANSIBLE_INVENTORY_PATH | base64 -d > .ansible-playbook-circleci/inventory-file
+            else
+              echo $ANSIBLE_INVENTORY_PATH > .ansible-playbook-circleci/inventory-file
+            fi
+            echo "-i .ansible-playbook-circleci/inventory-file" > .ansible-playbook-circleci/inventory
+
+      - ansible-playbook/install:
           version: '2.9.6'
-      - ansible-playbook/playbook:  # ansible-playbook orbのplaybook stepを利用
+      - ansible-playbook/playbook:
           inventory: <<parameters.inventory>>
           playbook: ansible/picture_upload_play.yml
           private-key: <<parameters.private-key>>
-
 
 
 workflows:
