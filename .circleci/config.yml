@@ -2,16 +2,15 @@ version: 2.1
 
 orbs:
   aws-cli: circleci/aws-cli@4.0
-  ansible-playbook: orbss/ansible-playbook@0.0.5  # ansible-playbook orbを追加
 
 executors:
   my-executor:
     docker:
-      - image: circleci/python
+      - image: circleci/python:3.10
 
 jobs:
   deploy-vpc:
-    executor: aws-cli/default
+    executor: my-executor
     steps:
       - checkout
       - aws-cli/install
@@ -25,7 +24,7 @@ jobs:
 
 
   deploy-ec2:
-    executor: aws-cli/default
+    executor: my-executor
     steps:
       - checkout
       - aws-cli/install
@@ -48,7 +47,7 @@ jobs:
 
 
   add-ssh-key:
-    executor: aws-cli/default
+    executor: my-executor
     steps:
       - run:
           name: Add SSH Key
@@ -72,9 +71,8 @@ jobs:
               "private_key": "'"$(cat temporary_key_file)"'"
             }')
 
-
   deploy-rds:
-    executor: aws-cli/default
+    executor: my-executor
     steps:
       - checkout
       - aws-cli/install
@@ -89,7 +87,7 @@ jobs:
 
 
   deploy-alb:
-    executor: aws-cli/default
+    executor: my-executor
     steps:
       - checkout
       - aws-cli/install
@@ -103,7 +101,7 @@ jobs:
 
 
   deploy-s3:
-    executor: aws-cli/default
+    executor: my-executor
     steps:
       - checkout
       - aws-cli/install
@@ -118,17 +116,6 @@ jobs:
 
   run-ansible:
     executor: my-executor
-    parameters:
-      inventory:
-        description: |
-          Ansible inventory file.
-        type: env_var_name
-        default: ANSIBLE_INVENTORY_PATH
-      private-key:
-        description: |
-          SSH private key file.
-        type: env_var_name
-        default: SSH_KEY_PATH
     steps:
       - checkout
       - aws-cli/install
@@ -141,27 +128,20 @@ jobs:
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
       - run:
-          name: Prepare Ansible Inventory File
+          name: Install Ansible
+          command: pip install ansible
+      - run:
+          name: Update Ansible Inventory
           command: |
-            if [ ! -d ".ansible-playbook-circleci" ]; then
-              mkdir .ansible-playbook-circleci
-            fi
+            echo "[your_target_host_or_group]" > ansible/inventory.ini
+            echo $INSTANCE_PUBLIC_IP >> ansible/inventory.ini
+      - run:
+          name: Run Ansible Playbook
+          command: |
+            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
+            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
 
-            if echo "$ANSIBLE_INVENTORY_PATH" | base64 -d > /dev/null 2>&1; then
-              echo $ANSIBLE_INVENTORY_PATH | base64 -d > .ansible-playbook-circleci/inventory-file
-            else
-              echo $ANSIBLE_INVENTORY_PATH > .ansible-playbook-circleci/inventory-file
-            fi
-            echo "-i .ansible-playbook-circleci/inventory-file" > .ansible-playbook-circleci/inventory
-
-      - ansible-playbook/install:
-          version: '2.9.6'
-      - ansible-playbook/playbook:
-          inventory: <<parameters.inventory>>
-          playbook: ansible/picture_upload_play.yml
-          private-key: <<parameters.private-key>>
-
-
+  
 workflows:
   version: 2
   deploy:
