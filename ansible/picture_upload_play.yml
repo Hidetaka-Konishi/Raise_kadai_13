@@ -121,7 +121,14 @@
   vars:
     ansible_python_interpreter: /usr/bin/python3
   tasks:
+    - name: Install pip3 if not exists
+      become: true
+      package:
+        name: python3-pip
+        state: present
+
     - name: Install PyMySQL
+      become: true
       pip:
         name: PyMySQL
 
@@ -132,7 +139,6 @@
         login_host: "{{ lookup('env', 'RDS_ENDPOINT') }}"
         login_user: "{{ lookup('env', 'RDS_MASTER_USERNAME') }}"
         login_password: "{{ lookup('env', 'RDS_MASTER_PASSWORD') }}"
-
 
 - name: Deploy database.yml from template
   hosts: your_target_host_or_group
