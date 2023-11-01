@@ -121,6 +121,10 @@
   vars:
     ansible_python_interpreter: /usr/bin/python3
   tasks:
+    - name: Install PyMySQL
+      pip:
+        name: PyMySQL
+
     - name: Create database
       mysql_db:
         name: "Raise13"
@@ -128,6 +132,7 @@
         login_host: "{{ lookup('env', 'RDS_ENDPOINT') }}"
         login_user: "{{ lookup('env', 'RDS_MASTER_USERNAME') }}"
         login_password: "{{ lookup('env', 'RDS_MASTER_PASSWORD') }}"
+
 
 - name: Deploy database.yml from template
   hosts: your_target_host_or_group
