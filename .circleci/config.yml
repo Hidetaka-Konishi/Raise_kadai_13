@@ -112,7 +112,7 @@ jobs:
           name: Update Ansible Inventory
           command: |
             echo "[your_target_host_or_group]" > ansible/inventory.ini
-            echo $INSTANCE_PUBLIC_IP >> ansible/inventory.ini
+            echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
       - run:
           name: Run Ansible Playbook
           command: |
