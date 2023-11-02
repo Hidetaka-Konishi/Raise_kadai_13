@@ -327,3 +327,4 @@
   tasks:
     - name: db:migrate run
       command: /bin/bash -lc "cd /home/ec2-user/raisetech-live8-sample-app && bin/rails db:migrate RAILS_ENV=development"
+      poll: 60
