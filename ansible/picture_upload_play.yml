@@ -319,3 +319,11 @@
   tasks:
     - name: Execute bundle exec unicorn command
       shell: cd /home/ec2-user/raisetech-live8-sample-app && bundle exec unicorn -c /home/ec2-user/raisetech-live8-sample-app/config/unicorn.rb -E development -D
+
+- name: Rails database migration
+  hosts: your_target_host_or_group
+  become: yes
+  become_user: ec2-user
+  tasks:
+    - name: db:migrate run
+      command: /bin/bash -lc "cd /home/ec2-user/raisetech-live8-sample-app && bin/rails db:migrate RAILS_ENV=development"
