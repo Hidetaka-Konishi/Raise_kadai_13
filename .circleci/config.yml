@@ -117,6 +117,11 @@ jobs:
           command: |
             echo "[your_target_host_or_group]" > ansible/inventory.ini
             echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
+            echo "[your_target_host_or_group:vars]" >> ansible/inventory.ini
+            echo "ruby_version=3.1.2" >> ansible/inventory.ini
+            echo "bundler_version=2.3.14" >> ansible/inventory.ini
+            echo "nvm_version=0.39.5" >> ansible/inventory.ini
+            echo "nodejs_version=17.9.1" >> ansible/inventory.ini
       - run:
           name: Run Ansible Playbook
           command: |
