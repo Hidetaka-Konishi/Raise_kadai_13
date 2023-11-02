@@ -315,7 +315,6 @@
       become: yes
       command:
         cmd: systemctl start nginx
-        chdir: /home/ec2-user/raisetech-live8-sample-app
 
 - name: Run Unicorn command on remote server
   hosts: your_target_host_or_group
@@ -323,7 +322,7 @@
   become_user: ec2-user
   tasks:
     - name: Execute bundle exec unicorn command
-      shell: cd /home/ec2-user/raisetech-live8-sample-app && bundle exec unicorn -c /home/ec2-user/raisetech-live8-sample-app/config/unicorn.rb -E development -D
+      shell: bundle exec unicorn -c /home/ec2-user/raisetech-live8-sample-app/config/unicorn.rb -E development -D
 
 - name: Rails database migration
   hosts: your_target_host_or_group
