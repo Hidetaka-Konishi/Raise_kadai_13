@@ -9,13 +9,17 @@
         name: git
         state: present
 
-- name: Clone Git repository using Ansible
+- name: Remove existing directory
   hosts: your_target_host_or_group
-  tasks:
-    - name: Clone the repository
-      git:
-        repo: 'https://github.com/yuta-ushijima/raisetech-live8-sample-app.git'
-        dest: '/home/ec2-user/raisetech-live8-sample-app'
+  file:
+    path: '/home/ec2-user/raisetech-live8-sample-app'
+    state: absent
+
+- name: Clone the repository
+  hosts: your_target_host_or_group
+  git:
+    repo: 'https://github.com/yuta-ushijima/raisetech-live8-sample-app.git'
+    dest: '/home/ec2-user/raisetech-live8-sample-app'
 
 - name: Yum Update Playbook
   hosts: your_target_host_or_group
