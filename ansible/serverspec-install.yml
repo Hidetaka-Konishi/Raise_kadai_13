@@ -1,8 +1,0 @@
----
-- name: Install Serverspec
-  hosts: your_target_host_or_group
-  tasks:
-    - name: Install Serverspec
-      shell: rvm use ruby-{{ ruby_version }} && gem install serverspec
-      args:
-        executable: /bin/bash
