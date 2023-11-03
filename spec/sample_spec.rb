@@ -10,6 +10,12 @@ describe port(listen_port) do
   it { should be_listening }
 end
 
-describe command('curl http://127.0.0.1:#{listen_port}/_plugin/head/ -o /dev/null -w "%{http_code}\n" -s') do
+describe command("curl http://127.0.0.1:#{listen_port}/_plugin/head/ -o /dev/null -w \"%{http_code}\\n\" -s") do
   its(:stdout) { should match /^200$/ }
+end
+
+describe 'Javaのインストール確認' do
+  describe command('java -version') do
+    its(:stderr) { should match /java version/ }
+  end
 end
