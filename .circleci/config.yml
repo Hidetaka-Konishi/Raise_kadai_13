@@ -143,7 +143,11 @@ jobs:
             gem install bcrypt_pbkdf -v '1.0'
       - run:
           name: Execute ServerSpec
-          command: rake
+          command: |
+            echo "テストコードの結果："
+            rake test
+          environment:
+            RAILS_ENV: test
 
 
 workflows:
