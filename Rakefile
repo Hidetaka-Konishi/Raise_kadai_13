@@ -9,6 +9,7 @@ namespace :spec do
     RSpec::Core::RakeTask.new(:all) do |t|
       ENV['TARGET_HOST'] ||= 'default'
       t.pattern = 'spec/*_spec.rb'
+    end
   end
 
   task :default => :all
