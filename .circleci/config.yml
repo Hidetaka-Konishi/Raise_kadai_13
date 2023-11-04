@@ -123,13 +123,27 @@ jobs:
           command: |
             export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
             ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
-
+      - run:
+          name: Save Public IP of EC2 Instance
+          command: |
+            echo $INSTANCE_PUBLIC_IP > /tmp/INSTANCE_PUBLIC_IP.txt
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - INSTANCE_PUBLIC_IP.txt
 
   execute_serverspec:
     docker:
       - image: circleci/ruby:2.6-node
     steps:
       - checkout
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Load Public IP of EC2 Instance
+          command: |
+            echo "export INSTANCE_PUBLIC_IP=$(cat /tmp/INSTANCE_PUBLIC_IP.txt)" >> $BASH_ENV
+            source $BASH_ENV
       - add_ssh_keys:
           fingerprints:
             - "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
