@@ -144,8 +144,9 @@ jobs:
       - run:
           name: Execute ServerSpec
           command: |
+            echo
             echo "テストコードの結果："
-            rake spec
+            bundle exec rake spec
           environment:
             RAILS_ENV: test
 
