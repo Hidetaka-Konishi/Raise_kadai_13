@@ -137,6 +137,9 @@ jobs:
           name: Set environment variables for ServerSpec
           command: echo "export TARGET_HOST=$INSTANCE_PUBLIC_IP" >> $BASH_ENV
       - run:
+          name: Change to the app directory
+          command: cd raisetech-live8-sample-app
+      - run:
           name: Install dependencies for ServerSpec
           command: |
             gem install bundler
@@ -145,7 +148,6 @@ jobs:
       - run:
           name: Execute ServerSpec
           command: |
-            cd raisetech-live8-sample-app
             echo
             echo "テストコードの結果："
             bundle exec rake spec
