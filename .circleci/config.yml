@@ -130,29 +130,16 @@ jobs:
       - image: circleci/ruby:2.6-node
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
-          name: Update RubyGems
-          command: gem update --system 3.2.3
-      - run:
-          name: Set environment variables for ServerSpec
-          command: echo "export TARGET_HOST=$INSTANCE_PUBLIC_IP" >> $BASH_ENV
-      - run:
-          name: Change to the app directory
-          command: cd raisetech-live8-sample-app
-      - run:
-          name: Install dependencies for ServerSpec
+          name: Establish SSH connection and execute ServerSpec
           command: |
-            gem install bundler
-            bundle config set --local path 'vendor/bundle'
-            bundle install
-      - run:
-          name: Execute ServerSpec
-          command: |
-            echo
-            echo "テストコードの結果："
-            bundle exec rake spec
-          environment:
-            RAILS_ENV: test
+            set +e
+            SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
+            $SSH_COMMAND 'cd raisetech-live8-sample-app && bundle exec rake spec'
+            set -e
 
 
 workflows:
