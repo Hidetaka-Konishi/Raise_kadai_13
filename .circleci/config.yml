@@ -137,10 +137,7 @@ jobs:
           name: Install dependencies for ServerSpec
           command: |
             gem install bundler
-            gem install serverspec
-            gem install rake
-            gem install ed25519 -v '1.2'
-            gem install bcrypt_pbkdf -v '1.0'
+            bundle install --path vendor/bundle
       - run:
           name: Execute ServerSpec
           command: |
