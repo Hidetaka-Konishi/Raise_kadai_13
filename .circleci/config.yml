@@ -131,16 +131,21 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Update RubyGems
+          command: gem update --system 3.2.3
+      - run:
           name: Set environment variables for ServerSpec
           command: echo "export TARGET_HOST=$INSTANCE_PUBLIC_IP" >> $BASH_ENV
       - run:
           name: Install dependencies for ServerSpec
           command: |
             gem install bundler
-            bundle install --path vendor/bundle
+            bundle config set --local path 'vendor/bundle'
+            bundle install
       - run:
           name: Execute ServerSpec
           command: |
+            cd raisetech-live8-sample-app
             echo
             echo "テストコードの結果："
             bundle exec rake spec
