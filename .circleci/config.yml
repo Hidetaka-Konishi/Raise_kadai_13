@@ -162,7 +162,7 @@ jobs:
             $SSH_COMMAND 'sudo apt-get update && sudo apt-get install -y ruby-full'
             $SSH_COMMAND 'gem install serverspec'
             $SSH_COMMAND 'gem install rake'
-            $SSH_COMMAND 'if [ -d "raisetech-live8-sample-app" ]; then cd raisetech-live8-sample-app; else git clone https://github.com/Hidetaka-Konishi/auto-aws-13.git; cd raisetech-live8-sample-app; fi'
+            $SSH_COMMAND 'if [ -d "raisetech-live8-sample-app" ]; then cd raisetech-live8-sample-app; else git clone https://github.com/Hidetaka-Konishi/auto-aws-13.git; cd auto-aws-13; fi && bundle install && bundle exec rake spec'
             $SSH_COMMAND 'bundle install'
             $SSH_COMMAND 'bundle exec rake spec'
             set -e
