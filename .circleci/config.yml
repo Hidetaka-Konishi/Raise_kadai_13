@@ -159,7 +159,7 @@ jobs:
           command: |
             set +e
             SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
-            $SSH_COMMAND 'sudo apt-get update && sudo apt-get install -y ruby-full'
+            $SSH_COMMAND 'sudo yum update -y'
             $SSH_COMMAND 'gem install serverspec'
             $SSH_COMMAND 'gem install rake'
             $SSH_COMMAND 'if [ -d "raisetech-live8-sample-app" ]; then cd raisetech-live8-sample-app; else git clone https://github.com/Hidetaka-Konishi/auto-aws-13.git; cd auto-aws-13; fi && bundle install && bundle exec rake spec'
