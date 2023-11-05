@@ -148,11 +148,23 @@ jobs:
           fingerprints:
             - "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
+          name: Install Ruby and Serverspec
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y ruby-full
+            gem install serverspec
+            gem install rake
+      - run:
           name: Establish SSH connection and execute ServerSpec
           command: |
             set +e
             SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
-            $SSH_COMMAND 'cd raisetech-live8-sample-app && bundle exec rake spec'
+            $SSH_COMMAND 'sudo apt-get update && sudo apt-get install -y ruby-full'
+            $SSH_COMMAND 'gem install serverspec'
+            $SSH_COMMAND 'gem install rake'
+            $SSH_COMMAND 'if [ -d "raisetech-live8-sample-app" ]; then cd raisetech-live8-sample-app; else git clone https://github.com/Hidetaka-Konishi/auto-aws-13.git; cd raisetech-live8-sample-app; fi'
+            $SSH_COMMAND 'bundle install'
+            $SSH_COMMAND 'bundle exec rake spec'
             set -e
 
 
