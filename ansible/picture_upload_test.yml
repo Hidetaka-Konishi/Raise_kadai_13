@@ -12,10 +12,10 @@
 
 - name: bundle Run
   hosts: your_target_host_or_group
-  become: yes
+  become: no
   tasks:
     - name: bundle run
-      command: bundle
+      command: ~/.rvm/gems/ruby-3.1.2/bin/bundle
       args:
         chdir: /home/ec2-user/raisetech-live8-sample-app
 
