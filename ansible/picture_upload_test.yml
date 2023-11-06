@@ -39,6 +39,11 @@
     serverspec_dir: /home/ec2-user/my_serverspec_tests
 
   tasks:
+    - name: Install pexpect Python library
+      pip:
+        name: pexpect
+        executable: /usr/bin/pip3
+  
     - name: Ensure serverspec directory exists
       file:
         path: "{{ serverspec_dir }}"
