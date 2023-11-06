@@ -57,10 +57,10 @@
         command: serverspec-init
         chdir: "{{ serverspec_dir }}"
         responses:
-          (?i)Select OS type: '1'
-          (?i)Select a backend type: '1'
-          (?i)Vagrant instance y/n: 'y'
-          (?i)Auto-configure Vagrant from Vagrantfile? y/n: 'y'
+          'Select number:': '1\n'
+          'Vagrant instance y/n:': 'y\n'
+          'Auto-configure Vagrant from Vagrantfile? y/n:': 'y\n'
+        timeout: 60
 
 - name: RSpec Run
   hosts: your_target_host_or_group
