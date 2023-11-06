@@ -57,7 +57,8 @@
         command: serverspec-init
         chdir: "{{ serverspec_dir }}"
         responses:
-          (?i)Select number: '1'
+          (?i)Select OS type: '1'
+          (?i)Select a backend type: '1'
           (?i)Vagrant instance y/n: 'y'
           (?i)Auto-configure Vagrant from Vagrantfile? y/n: 'y'
 
