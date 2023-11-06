@@ -60,6 +60,7 @@
           'Select number:': '1\n'
           'Vagrant instance y/n:': 'y\n'
           'Auto-configure Vagrant from Vagrantfile? y/n:': 'y\n'
+          'Input target host name:': "{{ inventory_hostname }}\n"
         timeout: 60
 
 - name: RSpec Run
