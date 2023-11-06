@@ -307,7 +307,6 @@
         cmd: RAILS_ENV=development bundle exec rake assets:precompile
         chdir: /home/ec2-user/raisetech-live8-sample-app
 
-
 - name: Start nginx service
   hosts: your_target_host_or_group
   tasks:
@@ -324,7 +323,6 @@
   tasks:
     - name: Execute bundle exec unicorn command
       shell: cd /home/ec2-user/raisetech-live8-sample-app && bundle exec unicorn -c /home/ec2-user/raisetech-live8-sample-app/config/unicorn.rb -E development -D
-
 
 - name: Rails database migration
   hosts: your_target_host_or_group
