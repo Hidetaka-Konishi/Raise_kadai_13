@@ -163,12 +163,10 @@ jobs:
       - run:
           name: Establish SSH connection and execute ServerSpec
           command: |
-            set +e
             SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
-            echo "Waiting for the service to start..."
-            sleep 30
-            $SSH_COMMAND 'cd raisetech-live8-sample-app && rspec ../my_serverspec_tests'
-            set -e
+            if ! $SSH_COMMAND 'cd raisetech-live8-sample-app && rspec ../my_serverspec_tests'; then
+              exit 1
+            fi
 
 
 workflows:
