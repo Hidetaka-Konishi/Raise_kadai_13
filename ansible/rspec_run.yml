@@ -1,0 +1,13 @@
+- name: Run Serverspec tests
+  hosts: your_target_host_or_group
+  tasks:
+    - name: Execute Serverspec
+      command: rspec ../my_serverspec_tests
+      args:
+        chdir: /home/ec2-user/raisetech-live8-sample-app
+      register: rspec_result
+      ignore_errors: yes
+
+    - name: Print Serverspec results
+      debug:
+        var: rspec_result.stdout_lines

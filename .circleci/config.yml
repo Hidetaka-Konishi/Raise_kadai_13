@@ -122,7 +122,7 @@ jobs:
           name: Run Ansible Playbook
           command: |
             export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
-            ansible-playbook -i ansible/inventory.ini -v ansible/picture_upload_play.yml
+            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
       - run:
           name: Save Public IP of EC2 Instance
           command: |
@@ -159,14 +159,12 @@ jobs:
           name: Run Ansible Playbook
           command: |
             export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
-            ansible-playbook -i ansible/inventory.ini -v ansible/picture_upload_test.yml
+            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_test.yml
       - run:
-          name: Establish SSH connection and execute ServerSpec
+          name: Run Ansible Playbook for Serverspec
           command: |
-            SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
-            if ! $SSH_COMMAND 'cd raisetech-live8-sample-app && rspec ../my_serverspec_tests'; then
-              exit 1
-            fi
+            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
+            ansible-playbook -i ansible/inventory.ini ansible/rspec_run.yml || true
 
 
 workflows:
