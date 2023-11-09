@@ -20,17 +20,17 @@
       args:
         chdir: /home/ec2-user/raisetech-live8-sample-app
 
-#- name: Change spec_helper.rb
-#  hosts: your_target_host_or_group
-#  become: yes
-#  tasks:
-#    - name: Create spec_helper.rb
-#      template:
-#        src: templates/spec_helper.rb.j2
-#        dest: /home/ec2-user/raisetech-live8-sample-app/spec/spec_helper.rb
-#        owner: ec2-user
-#        group: ec2-user
-#        mode: '0664'
+- name: Change spec_helper.rb
+  hosts: your_target_host_or_group
+  become: yes
+  tasks:
+    - name: Create spec_helper.rb
+      template:
+        src: templates/spec_helper.rb.j2
+        dest: /home/ec2-user/raisetech-live8-sample-app/spec/spec_helper.rb
+        owner: ec2-user
+        group: ec2-user
+        mode: '0664'
 
 - name: Serverspec init automation
   hosts: your_target_host_or_group
@@ -63,15 +63,15 @@
           'Input target host name:': "{{ inventory_hostname }}\n"
         timeout: 60
 
-- name: RSpec Run
-  hosts: your_target_host_or_group
-  become: yes
-  tasks:
-    - name: rspec --init
-      command: rspec --init
-      args:
-        chdir: /home/ec2-user/my_serverspec_tests
-      become_user: ec2-user
+#- name: RSpec Run
+#  hosts: your_target_host_or_group
+#  become: yes
+#  tasks:
+#    - name: rspec --init
+#      command: rspec --init
+#      args:
+#        chdir: /home/ec2-user/my_serverspec_tests
+#      become_user: ec2-user
 
 - name: Change sample_spec.rb
   hosts: your_target_host_or_group
