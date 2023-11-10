@@ -33,15 +33,11 @@
 #        mode: '0664'
 
 - name: Install Serverspec using gem
-  hosts: your_target_host_or_group
-  become: yes
-  tasks:
-    - name: Install Serverspec
-      gem:
-        name: serverspec
-        state: present
-        user_install: no
-        executable: /home/ec2-user/.rvm/rubies/ruby-3.1.2/bin/gem
+  shell: |
+    source ~/.rvm/scripts/rvm
+    gem install serverspec
+  args:
+    executable: /bin/bash
 
 - name: Serverspec init automation
   hosts: your_target_host_or_group
