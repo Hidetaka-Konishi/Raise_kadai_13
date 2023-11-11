@@ -164,6 +164,7 @@ jobs:
           name: Establish SSH connection and execute ServerSpec
           command: |
             SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
+            sleep 480
             if ! $SSH_COMMAND 'cd my_serverspec_tests && rake spec'; then
               exit 1
             fi
