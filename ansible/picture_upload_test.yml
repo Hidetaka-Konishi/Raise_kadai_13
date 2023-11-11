@@ -34,7 +34,6 @@
 
 - name: Install Serverspec using gem
   hosts: your_target_host_or_group
-  become: yes
   tasks:
     - name: Install Serverspec
       shell: |
