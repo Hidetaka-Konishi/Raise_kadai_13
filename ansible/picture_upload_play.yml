@@ -277,20 +277,16 @@
         group: ec2-user
         mode: '0664'
 
-- name: Execute bundle install in specific directory
-  hosts: your_target_host_or_group
-  tasks:
-    - name: Run bundle install --with development
-      command:
-        cmd: bundle install --with development
-        chdir: /home/ec2-user/raisetech-live8-sample-app
-
 - name: Change development.rb
   hosts: your_target_host_or_group
   become: yes
   vars:
     ALB_DNS_NAME: "{{ alb_dns_name }}"
   tasks:
+    - name: Debug ALB DNS Name
+      debug:
+        msg: "ALB DNS Name is: {{ alb_dns_name }}"
+
     - name: Create development.rb
       template:
         src: templates/development.rb.j2
