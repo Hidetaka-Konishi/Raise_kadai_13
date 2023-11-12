@@ -288,8 +288,8 @@
 - name: Change development.rb
   hosts: your_target_host_or_group
   become: yes
-  vars_files:
-    - inventory.ini
+  vars:
+    ALB_DNS_NAME: "{{ alb_dns_name }}"
   tasks:
     - name: Create development.rb
       template:
