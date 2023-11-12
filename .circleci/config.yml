@@ -58,7 +58,7 @@ jobs:
               --template-file cloudformation/picture-upload-rds.yml \
               --stack-name raise13-rds \
               --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
-          no_output_timeout: 20m
+          no_output_timeout: 30m
 
 
   deploy-alb:
@@ -73,6 +73,14 @@ jobs:
               --template-file cloudformation/picture-upload-alb.yml \
               --stack-name raise13-alb \
               --parameter-overrides Prefix=raise13-alb VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
+      - run:
+          name: Get DNS Name of ALB
+          command: |
+            ALB_DNS_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raise13-alb \
+              --query 'Stacks[0].Outputs[?OutputKey==`AlbDnsName`].OutputValue' \
+              --output text)
+            echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
 
 
   deploy-s3:
@@ -106,6 +114,11 @@ jobs:
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
       - run:
+          name: Retrieve ALB DNS Name
+          command: |
+            echo "export ALB_DNS_NAME=$(cat /tmp/ALB_DNS_NAME.txt)" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
           name: Install Ansible
           command: pip install ansible
       - run:
@@ -114,6 +127,7 @@ jobs:
             echo "[your_target_host_or_group]" > ansible/inventory.ini
             echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
             echo "[your_target_host_or_group:vars]" >> ansible/inventory.ini
+            echo "alb_dns_name=$ALB_DNS_NAME" >> ansible/inventory.ini
             echo "ruby_version=3.1.2" >> ansible/inventory.ini
             echo "bundler_version=2.3.14" >> ansible/inventory.ini
             echo "nvm_version=0.39.5" >> ansible/inventory.ini

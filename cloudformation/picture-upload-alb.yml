@@ -152,3 +152,8 @@ Resources:
               - 
                 CidrIp: "0.0.0.0/0"
                 IpProtocol: "-1"
+
+Outputs:
+  AlbDnsName:
+    Description: "DNS Name of the Application Load Balancer"
+    Value: !GetAtt ElasticLoadBalancingV2LoadBalancer.DNSName
