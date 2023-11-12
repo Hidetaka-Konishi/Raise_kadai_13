@@ -116,7 +116,7 @@ jobs:
       - run:
           name: Retrieve ALB DNS Name
           command: |
-            echo "export ALB_DNS_NAME=$(cat /tmp/ALB_DNS_NAME.txt)" >> $BASH_ENV
+            echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
             source $BASH_ENV
       - run:
           name: Install Ansible
