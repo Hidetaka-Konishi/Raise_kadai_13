@@ -2,9 +2,9 @@
   hosts: your_target_host_or_group
   tasks:
     - name: Execute Serverspec
-      command: rspec ../my_serverspec_tests
+      command: rake spec
       args:
-        chdir: /home/ec2-user/raisetech-live8-sample-app
+        chdir: /home/ec2-user/my_serverspec_tests
       register: rspec_result
       ignore_errors: yes
 
