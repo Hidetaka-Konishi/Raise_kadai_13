@@ -289,7 +289,7 @@
   hosts: your_target_host_or_group
   become: yes
   vars:
-    alb_dns_name: "{{ alb_dns_name }}"
+    ALB_DNS_NAME: "{{ alb_dns_name }}"
   tasks:
     - name: Create development.rb
       template:
