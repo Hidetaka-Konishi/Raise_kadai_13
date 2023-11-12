@@ -136,6 +136,9 @@ jobs:
             echo "nvm_version=0.39.5" >> ansible/inventory.ini
             echo "nodejs_version=17.9.1" >> ansible/inventory.ini
       - run:
+          name: Display Inventory File
+          command: cat ansible/inventory.ini
+      - run:
           name: Run Ansible Playbook
           command: |
             export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
