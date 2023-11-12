@@ -81,7 +81,10 @@ jobs:
               --query 'Stacks[0].Outputs[?OutputKey==`AlbDnsName`].OutputValue' \
               --output text)
             echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
-
+      - run:
+          name: Display ALB DNS Name
+          command: |
+            echo "ALB DNS Name: $ALB_DNS_NAME"
 
   deploy-s3:
     executor: my-executor
