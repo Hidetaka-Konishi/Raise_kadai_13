@@ -119,8 +119,11 @@ jobs:
       - run:
           name: Retrieve ALB DNS Name
           command: |
+            ALB_DNS_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raise13-alb \
+              --query 'Stacks[0].Outputs[?OutputKey==`AlbDnsName`].OutputValue' \
+              --output text)
             echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
-            source $BASH_ENV
       - run:
           name: Install Ansible
           command: pip install ansible
