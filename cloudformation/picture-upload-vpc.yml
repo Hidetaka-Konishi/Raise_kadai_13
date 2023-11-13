@@ -157,37 +157,34 @@ Resources:
             RouteTableId: !Ref EC2RouteTable2
             SubnetId: !Ref EC2Subnet3
 
-    VPCIDParameter:
-        Type: "AWS::SSM::Parameter"
-        Properties: 
-          Name: !Sub "/${Prefix}/VPC-ID"
-          Type: "String"
-          Value: !Ref EC2VPC
+    
+Outputs:
+    VPCID:
+        Description: "The ID of the created VPC"
+        Value: !Ref EC2VPC
+        Export:
+            Name: !Sub "${Prefix}-VPCID"
 
-    SubnetId1Parameter:
-        Type: "AWS::SSM::Parameter"
-        Properties: 
-          Name: !Sub "/${Prefix}/EC2Subnet1Id"
-          Type: "String"
-          Value: !Ref EC2Subnet1
+    SubnetId1:
+        Description: "The ID of the first subnet"
+        Value: !Ref EC2Subnet1
+        Export:
+            Name: !Sub "${Prefix}-SubnetId1"
 
-    SubnetId2Parameter:
-        Type: "AWS::SSM::Parameter"
-        Properties: 
-          Name: !Sub "/${Prefix}/EC2Subnet2Id"
-          Type: "String"
-          Value: !Ref EC2Subnet2
+    SubnetId2:
+        Description: "The ID of the second subnet"
+        Value: !Ref EC2Subnet2
+        Export:
+            Name: !Sub "${Prefix}-SubnetId2"
 
-    SubnetId3Parameter:
-        Type: "AWS::SSM::Parameter"
-        Properties: 
-          Name: !Sub "/${Prefix}/EC2Subnet3Id"
-          Type: "String"
-          Value: !Ref EC2Subnet3
+    SubnetId3:
+        Description: "The ID of the third subnet"
+        Value: !Ref EC2Subnet3
+        Export:
+            Name: !Sub "${Prefix}-SubnetId3"
 
-    SubnetId4Parameter:
-        Type: "AWS::SSM::Parameter"
-        Properties: 
-          Name: !Sub "/${Prefix}/EC2Subnet4Id"
-          Type: "String"
-          Value: !Ref EC2Subnet4
+    SubnetId4:
+        Description: "The ID of the fourth subnet"
+        Value: !Ref EC2Subnet4
+        Export:
+            Name: !Sub "${Prefix}-SubnetId4"

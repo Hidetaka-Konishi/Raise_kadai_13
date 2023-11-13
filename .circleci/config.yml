@@ -168,8 +168,7 @@ jobs:
             echo "export INSTANCE_PUBLIC_IP=$(cat /tmp/INSTANCE_PUBLIC_IP.txt)" >> $BASH_ENV
             source $BASH_ENV
       - add_ssh_keys:
-          fingerprints:
-            - "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
+          fingerprints: "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
           name: Install Ansible
           command: pip install ansible

@@ -15,7 +15,8 @@ Resources:
         Properties:
             NetworkInterfaces:
                 - DeviceIndex: "0"
-                  SubnetId: !Sub "{{resolve:ssm:/${VPCPrefix}/EC2Subnet1Id}}"
+                  SubnetId: !ImportValue
+                    "Fn::Sub": "${VPCPrefix}-SubnetId1"
                   GroupSet: 
                     - !Ref EC2SecurityGroup1
                   AssociatePublicIpAddress: true
@@ -45,7 +46,8 @@ Resources:
         Type: "AWS::EC2::SecurityGroup"
         Properties:
             GroupDescription: "ec2-securitygroup1"
-            VpcId: !Sub "{{resolve:ssm:/${VPCPrefix}/VPC-ID}}"
+            VpcId: !ImportValue
+              "Fn::Sub": "${VPCPrefix}-VPCID"
             SecurityGroupIngress: 
               - 
                 CidrIp: "0.0.0.0/0"
@@ -62,21 +64,15 @@ Resources:
                 CidrIp: "0.0.0.0/0"
                 IpProtocol: "-1"
 
-    EC2SecurityGroup1Parameter:
-        Type: "AWS::SSM::Parameter"
-        Properties: 
-          Name: !Sub "/${Prefix}/EC2-SecurityGroup1"
-          Type: "String"
-          Value: !Ref EC2SecurityGroup1
-
-    ALBTarget1Parameter:
-        Type: "AWS::SSM::Parameter"
-        Properties: 
-          Name: !Sub "/${Prefix}/alb-target1"
-          Type: "String"
-          Value: !Ref EC2Instance
-
 Outputs:
+  InstanceId:
+    Description: "The ID of the EC2 Instance"
+    Value: !Ref EC2Instance
+
   InstancePublicIp:
     Description: "Public IP of EC2 instance"
     Value: !GetAtt EC2Instance.PublicIp
+
+  SecurityGroupId:
+    Description: "The ID of the EC2 Security Group"
+    Value: !Ref EC2SecurityGroup1
