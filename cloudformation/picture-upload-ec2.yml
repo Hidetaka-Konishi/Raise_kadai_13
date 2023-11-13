@@ -68,6 +68,8 @@ Outputs:
   InstanceId:
     Description: "The ID of the EC2 Instance"
     Value: !Ref EC2Instance
+    Export:
+        Name: !Sub "${Prefix}-InstanceId"
 
   InstancePublicIp:
     Description: "Public IP of EC2 instance"
@@ -76,3 +78,5 @@ Outputs:
   SecurityGroupId:
     Description: "The ID of the EC2 Security Group"
     Value: !Ref EC2SecurityGroup1
+    Export:
+        Name: !Sub "${Prefix}-SecurityGroupId"

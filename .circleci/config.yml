@@ -182,18 +182,18 @@ jobs:
           command: |
             export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
             ansible-playbook -i ansible/inventory.ini ansible/picture_upload_test.yml
-#      - run:
-#          name: Establish SSH connection and execute ServerSpec
-#          command: |
-#            SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
-#            if ! $SSH_COMMAND 'cd my_serverspec_tests && rake spec'; then
-#              exit 1
-#            fi
       - run:
-         name: Run Ansible Playbook for Serverspec
-         command: |
-            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
-            ansible-playbook -i ansible/inventory.ini ansible/rspec_run.yml || true
+          name: Establish SSH connection and execute ServerSpec
+          command: |
+            SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
+            if ! $SSH_COMMAND 'cd my_serverspec_tests && rake spec'; then
+              exit 1
+            fi
+#      - run:
+#         name: Run Ansible Playbook for Serverspec
+#         command: |
+#            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
+#            ansible-playbook -i ansible/inventory.ini ansible/rspec_run.yml || true
 
 
 workflows:
