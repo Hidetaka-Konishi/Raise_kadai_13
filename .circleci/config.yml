@@ -81,10 +81,6 @@ jobs:
               --query 'Stacks[0].Outputs[?OutputKey==`AlbDnsName`].OutputValue' \
               --output text)
             echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
-      - run:
-          name: Display ALB DNS Name
-          command: |
-            echo "ALB DNS Name: $ALB_DNS_NAME"
 
   deploy-s3:
     executor: my-executor
@@ -106,8 +102,7 @@ jobs:
       - checkout
       - aws-cli/install
       - add_ssh_keys:
-          fingerprints:
-            - "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
+          fingerprints: "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
           name: Retrieve Public IP of EC2 Instance
           command: |
@@ -138,9 +133,6 @@ jobs:
             echo "bundler_version=2.3.14" >> ansible/inventory.ini
             echo "nvm_version=0.39.5" >> ansible/inventory.ini
             echo "nodejs_version=17.9.1" >> ansible/inventory.ini
-      - run:
-          name: Display Inventory File
-          command: cat ansible/inventory.ini
       - run:
           name: Run Ansible Playbook
           command: |
