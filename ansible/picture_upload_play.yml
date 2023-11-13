@@ -283,10 +283,6 @@
   vars:
     ALB_DNS_NAME: "{{ alb_dns_name }}"
   tasks:
-    - name: Debug ALB DNS Name
-      debug:
-        msg: "ALB DNS Name is: {{ alb_dns_name }}"
-
     - name: Create development.rb
       template:
         src: templates/development.rb.j2
