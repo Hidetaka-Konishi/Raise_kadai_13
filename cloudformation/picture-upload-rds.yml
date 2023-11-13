@@ -23,7 +23,7 @@ Resources:
             DBInstanceClass: "db.t3.micro"
             Engine: "mysql"
             MasterUsername: "admin"
-            MasterUserPassword: '{{resolve:ssm-secure:picture-upload:1}}'
+            MasterUserPassword: '{{resolve:ssm-secure:picture-upload}}'
             PreferredBackupWindow: "08:19-08:49"
             BackupRetentionPeriod: 1
             AvailabilityZone: !Sub "${AWS::Region}b"
@@ -36,7 +36,7 @@ Resources:
             StorageType: "gp2"
             Port: "3306"
             StorageEncrypted: true
-            KmsKeyId: !Sub "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/623421e8-f259-4d7f-9b9b-f8bc1921d999"
+            # KmsKeyId: !Sub "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/623421e8-f259-4d7f-9b9b-f8bc1921d999"
             CopyTagsToSnapshot: true
             MonitoringInterval: 0
             EnableIAMDatabaseAuthentication: false
@@ -55,17 +55,21 @@ Resources:
             DBSubnetGroupDescription: "RDS-subnetgroup"
             DBSubnetGroupName: !Sub ${Prefix}-subnet-group
             SubnetIds: 
-              - !Sub "{{resolve:ssm:/${VPCPrefix}/EC2Subnet2Id}}"
-              - !Sub "{{resolve:ssm:/${VPCPrefix}/EC2Subnet3Id}}"
+              - !ImportValue
+                  "Fn::Sub": "${VPCPrefix}-SubnetId2"
+              - !ImportValue
+                  "Fn::Sub": "${VPCPrefix}-SubnetId3"
 
     RDSSecurityGroup1:
         Type: "AWS::EC2::SecurityGroup"
         Properties:
             GroupDescription: "rds-securitygroup1"
-            VpcId: !Sub "{{resolve:ssm:/${VPCPrefix}/VPC-ID}}"
+            VpcId: !ImportValue
+              "Fn::Sub": "${VPCPrefix}-VPCID"
             SecurityGroupIngress: 
               - 
-                SourceSecurityGroupId: !Sub "{{resolve:ssm:/${EC2Prefix}/EC2-SecurityGroup1}}"
+                SourceSecurityGroupId: !ImportValue
+                  "Fn::Sub": "${EC2Prefix}-SecurityGroupId"
                 SourceSecurityGroupOwnerId: !Ref AWS::AccountId
                 Description: "3306 tcp"
                 FromPort: 3306

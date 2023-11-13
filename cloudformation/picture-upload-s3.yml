@@ -10,7 +10,7 @@ Resources:
     S3Bucket:
         Type: "AWS::S3::Bucket"
         Properties:
-            BucketName: !Sub ${Prefix}-s3buket
+            BucketName: !Sub ${Prefix}-s3buket-${AWS::AccountId}
             BucketEncryption: 
                 ServerSideEncryptionConfiguration: 
                   - 
