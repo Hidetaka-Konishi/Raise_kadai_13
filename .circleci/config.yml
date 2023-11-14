@@ -35,7 +35,6 @@ jobs:
               --template-file cloudformation/picture-upload-ec2.yml \
               --stack-name raise13-ec2 \
               --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc
-
       - run:
           name: Get Public IP of EC2 Instance
           command: |
@@ -44,6 +43,15 @@ jobs:
               --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
+      - run:
+          name: Get KeyPair Secret Key
+          command: |
+            KEY_PAIR_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raise13-ec2 \
+              --query 'Stacks[0].Outputs[?OutputKey==`KeyPairName`].OutputValue' \
+              --output text)
+            aws ec2 describe-key-pairs --key-names $KEY_PAIR_NAME --query 'KeyPairs[0].KeyMaterial' --output text > ec2-key.pem
+            chmod 400 ec2-key.pem
 
 
   deploy-rds:
@@ -101,8 +109,6 @@ jobs:
     steps:
       - checkout
       - aws-cli/install
-      - add_ssh_keys:
-          fingerprints: "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
           name: Retrieve Public IP of EC2 Instance
           command: |
@@ -136,7 +142,7 @@ jobs:
       - run:
           name: Run Ansible Playbook
           command: |
-            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
+            export ANSIBLE_SSH_ARGS='-i ec2-key.pem -o StrictHostKeyChecking=no'
             ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
       - run:
           name: Save Public IP of EC2 Instance
@@ -146,6 +152,7 @@ jobs:
           root: /tmp
           paths:
             - INSTANCE_PUBLIC_IP.txt
+
 
   execute_serverspec:
     executor: my-executor
@@ -159,8 +166,6 @@ jobs:
           command: |
             echo "export INSTANCE_PUBLIC_IP=$(cat /tmp/INSTANCE_PUBLIC_IP.txt)" >> $BASH_ENV
             source $BASH_ENV
-      - add_ssh_keys:
-          fingerprints: "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
           name: Install Ansible
           command: pip install ansible
@@ -172,12 +177,12 @@ jobs:
       - run:
           name: Run Ansible Playbook
           command: |
-            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
+            export ANSIBLE_SSH_ARGS='-i ec2-key.pem -o StrictHostKeyChecking=no'
             ansible-playbook -i ansible/inventory.ini ansible/picture_upload_test.yml
       - run:
           name: Establish SSH connection and execute ServerSpec
           command: |
-            SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
+            SSH_COMMAND="ssh -i ec2-key.pem -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
             if ! $SSH_COMMAND 'cd my_serverspec_tests && rake spec'; then
               exit 1
             fi
