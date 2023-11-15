@@ -8,8 +8,62 @@ Parameters:
   VPCPrefix:
     Type: String
     Description: Fill in the prefixes listed in the VPC.
+  S3Prefix:
+    Type: String
+    Description: Specify a prefix to be listed in S3
 
 Resources:
+    EC2Role:
+      Type: "AWS::IAM::Role"
+      Properties:
+        RoleName: !Sub "${Prefix}-EC2-SSM-Role"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Service: "ec2.amazonaws.com"
+              Action: "sts:AssumeRole"
+        Path: "/"
+
+    S3AccessPolicy:
+      Type: "AWS::IAM::Policy"
+      Properties:
+        PolicyName: !Sub "${Prefix}-EC2-S3-Access-Policy"
+        Roles:
+          - !Ref EC2Role
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "s3:GetObject"
+                - "s3:PutObject"
+                - "s3:DeleteObject"
+              Resource: !Sub "arn:${AWS::Partition}:s3:::${S3Prefix}-s3buket-${AWS::AccountId}/*"
+
+    EC2Policy:
+      Type: "AWS::IAM::Policy"
+      Properties:
+        PolicyName: !Sub "${Prefix}-EC2-SSM-Policy"
+        Roles:
+          - !Ref EC2Role
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+                - "ssm:GetParameters"
+                - "ssm:GetParametersByPath"
+              Resource: "*"
+
+    EC2InstanceProfile:
+      Type: "AWS::IAM::InstanceProfile"
+      Properties:
+        Roles:
+          - !Ref EC2Role
+        InstanceProfileName: !Sub "${Prefix}-EC2-Instance-Profile"
     EC2KeyPair:
       Type: "AWS::EC2::KeyPair"
       Properties:
@@ -17,6 +71,7 @@ Resources:
     EC2Instance:
         Type: "AWS::EC2::Instance"
         Properties:
+            IamInstanceProfile: !Ref EC2InstanceProfile
             NetworkInterfaces:
                 - DeviceIndex: "0"
                   SubnetId: !ImportValue

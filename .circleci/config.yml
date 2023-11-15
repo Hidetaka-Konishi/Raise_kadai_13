@@ -1,218 +1,221 @@
 version: 2.1
 
 orbs:
-  aws-cli: circleci/aws-cli@4.0
+    aws-cli: circleci/aws-cli@4.0
 
 executors:
-  my-executor:
-    docker:
-      - image: circleci/python:3.10
+    my-executor:
+        docker:
+            - image: circleci/python:3.10
 
 jobs:
-  deploy-vpc:
-    executor: my-executor
-    steps:
-      - checkout
-      - aws-cli/install
-      - run:
-          name: Deploy CloudFormation VPC Stack
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/picture-upload-vpc.yml \
-              --stack-name raise13-vpc \
-              --parameter-overrides Prefix=raise13-vpc
+    deploy-vpc:
+        executor: my-executor
+        steps:
+            - checkout
+            - aws-cli/install
+            - run:
+                  name: Deploy CloudFormation VPC Stack
+                  command: |
+                      aws cloudformation deploy \
+                        --template-file cloudformation/picture-upload-vpc.yml \
+                        --stack-name raise13-vpc \
+                        --parameter-overrides Prefix=raise13-vpc
 
+    deploy-ec2:
+        executor: my-executor
+        steps:
+            - checkout
+            - aws-cli/install
+            - run:
+                  name: Deploy CloudFormation EC2 Stack
+                  command: |
+                      aws cloudformation deploy \
+                        --template-file cloudformation/picture-upload-ec2.yml \
+                        --stack-name raise13-ec2 \
+                        --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc
+            - run:
+                  name: Get Public IP of EC2 Instance
+                  command: |
+                      PUBLIC_IP=$(aws cloudformation describe-stacks \
+                        --stack-name raise13-ec2 \
+                        --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
+                        --output text)
+                      echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
+            - run:
+                  name: Get KeyPair Secret Key
+                  command: |
+                      KEY_PAIR_NAME=$(aws cloudformation describe-stacks \
+                        --stack-name raise13-ec2 \
+                        --query 'Stacks[0].Outputs[?OutputKey==`KeyPairName`].OutputValue' \
+                        --output text)
+                      aws ec2 describe-key-pairs --key-names $KEY_PAIR_NAME --query 'KeyPairs[0].KeyMaterial' --output text > ec2-key.pem
+                      chmod 400 ec2-key.pem
+            - persist_to_workspace:
+                  root: .
+                  paths:
+                      - ec2-key.pem
 
-  deploy-ec2:
-    executor: my-executor
-    steps:
-      - checkout
-      - aws-cli/install
-      - run:
-          name: Deploy CloudFormation EC2 Stack
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/picture-upload-ec2.yml \
-              --stack-name raise13-ec2 \
-              --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc
-      - run:
-          name: Get Public IP of EC2 Instance
-          command: |
-            PUBLIC_IP=$(aws cloudformation describe-stacks \
-              --stack-name raise13-ec2 \
-              --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
-              --output text)
-            echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
-      - run:
-          name: Get KeyPair Secret Key
-          command: |
-            KEY_PAIR_NAME=$(aws cloudformation describe-stacks \
-              --stack-name raise13-ec2 \
-              --query 'Stacks[0].Outputs[?OutputKey==`KeyPairName`].OutputValue' \
-              --output text)
-            aws ec2 describe-key-pairs --key-names $KEY_PAIR_NAME --query 'KeyPairs[0].KeyMaterial' --output text > ec2-key.pem
-            chmod 400 ec2-key.pem
+    deploy-rds:
+        executor: my-executor
+        steps:
+            - checkout
+            - aws-cli/install
+            - run:
+                  name: Deploy CloudFormation RDS Stack
+                  command: |
+                      aws cloudformation deploy \
+                        --template-file cloudformation/picture-upload-rds.yml \
+                        --stack-name raise13-rds \
+                        --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
+                  no_output_timeout: 30m
 
+    deploy-alb:
+        executor: my-executor
+        steps:
+            - checkout
+            - aws-cli/install
+            - run:
+                  name: Deploy CloudFormation ALB Stack
+                  command: |
+                      aws cloudformation deploy \
+                        --template-file cloudformation/picture-upload-alb.yml \
+                        --stack-name raise13-alb \
+                        --parameter-overrides Prefix=raise13-alb VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
+            - run:
+                  name: Get DNS Name of ALB
+                  command: |
+                      ALB_DNS_NAME=$(aws cloudformation describe-stacks \
+                        --stack-name raise13-alb \
+                        --query 'Stacks[0].Outputs[?OutputKey==`AlbDnsName`].OutputValue' \
+                        --output text)
+                      echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
 
-  deploy-rds:
-    executor: my-executor
-    steps:
-      - checkout
-      - aws-cli/install
-      - run:
-          name: Deploy CloudFormation RDS Stack
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/picture-upload-rds.yml \
-              --stack-name raise13-rds \
-              --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
-          no_output_timeout: 30m
+    deploy-s3:
+        executor: my-executor
+        steps:
+            - checkout
+            - aws-cli/install
+            - run:
+                  name: Deploy CloudFormation S3 Stack
+                  command: |
+                      aws cloudformation deploy \
+                        --template-file cloudformation/picture-upload-s3.yml \
+                        --stack-name raise13-s3 \
+                        --parameter-overrides Prefix=raise13-s3
 
+    run-ansible:
+        executor: my-executor
+        steps:
+            - checkout
+            - aws-cli/install
+            - attach_workspace:
+                  at: /workspace
+            - run:
+                  name: Retrieve Public IP of EC2 Instance
+                  command: |
+                      PUBLIC_IP=$(aws cloudformation describe-stacks \
+                        --stack-name raise13-ec2 \
+                        --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
+                        --output text)
+                      echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
+            - run:
+                  name: Retrieve ALB DNS Name
+                  command: |
+                      ALB_DNS_NAME=$(aws cloudformation describe-stacks \
+                        --stack-name raise13-alb \
+                        --query 'Stacks[0].Outputs[?OutputKey==`AlbDnsName`].OutputValue' \
+                        --output text)
+                      echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
+            - run:
+                  name: Install Ansible
+                  command: pip install ansible
+            - run:
+                  name: Update Ansible Inventory
+                  command: |
+                      echo "[your_target_host_or_group]" > ansible/inventory.ini
+                      echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
+                      echo "[your_target_host_or_group:vars]" >> ansible/inventory.ini
+                      echo "alb_dns_name=$ALB_DNS_NAME" >> ansible/inventory.ini
+                      echo "region=us-east-1" >> ansible/inventory.ini
+                      echo "ruby_version=3.1.2" >> ansible/inventory.ini
+                      echo "bundler_version=2.3.14" >> ansible/inventory.ini
+                      echo "nvm_version=0.39.5" >> ansible/inventory.ini
+                      echo "nodejs_version=17.9.1" >> ansible/inventory.ini
+            - run:
+                  name: Run Ansible Playbook
+                  command: |
+                      export ANSIBLE_SSH_ARGS='-i /workspace/ec2-key.pem -o StrictHostKeyChecking=no'
+                      ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
+            - run:
+                  name: Save Public IP of EC2 Instance
+                  command: |
+                      echo $INSTANCE_PUBLIC_IP > /tmp/INSTANCE_PUBLIC_IP.txt
+            - persist_to_workspace:
+                  root: /tmp
+                  paths:
+                      - INSTANCE_PUBLIC_IP.txt
 
-  deploy-alb:
-    executor: my-executor
-    steps:
-      - checkout
-      - aws-cli/install
-      - run:
-          name: Deploy CloudFormation ALB Stack
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/picture-upload-alb.yml \
-              --stack-name raise13-alb \
-              --parameter-overrides Prefix=raise13-alb VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
-      - run:
-          name: Get DNS Name of ALB
-          command: |
-            ALB_DNS_NAME=$(aws cloudformation describe-stacks \
-              --stack-name raise13-alb \
-              --query 'Stacks[0].Outputs[?OutputKey==`AlbDnsName`].OutputValue' \
-              --output text)
-            echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
-
-  deploy-s3:
-    executor: my-executor
-    steps:
-      - checkout
-      - aws-cli/install
-      - run:
-          name: Deploy CloudFormation S3 Stack
-          command: |
-            aws cloudformation deploy \
-              --template-file cloudformation/picture-upload-s3.yml \
-              --stack-name raise13-s3 \
-              --parameter-overrides Prefix=raise13-s3
-
-
-  run-ansible:
-    executor: my-executor
-    steps:
-      - checkout
-      - aws-cli/install
-      - run:
-          name: Retrieve Public IP of EC2 Instance
-          command: |
-            PUBLIC_IP=$(aws cloudformation describe-stacks \
-              --stack-name raise13-ec2 \
-              --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
-              --output text)
-            echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
-      - run:
-          name: Retrieve ALB DNS Name
-          command: |
-            ALB_DNS_NAME=$(aws cloudformation describe-stacks \
-              --stack-name raise13-alb \
-              --query 'Stacks[0].Outputs[?OutputKey==`AlbDnsName`].OutputValue' \
-              --output text)
-            echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
-      - run:
-          name: Install Ansible
-          command: pip install ansible
-      - run:
-          name: Update Ansible Inventory
-          command: |
-            echo "[your_target_host_or_group]" > ansible/inventory.ini
-            echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
-            echo "[your_target_host_or_group:vars]" >> ansible/inventory.ini
-            echo "alb_dns_name=$ALB_DNS_NAME" >> ansible/inventory.ini
-            echo "ruby_version=3.1.2" >> ansible/inventory.ini
-            echo "bundler_version=2.3.14" >> ansible/inventory.ini
-            echo "nvm_version=0.39.5" >> ansible/inventory.ini
-            echo "nodejs_version=17.9.1" >> ansible/inventory.ini
-      - run:
-          name: Run Ansible Playbook
-          command: |
-            export ANSIBLE_SSH_ARGS='-i ec2-key.pem -o StrictHostKeyChecking=no'
-            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
-      - run:
-          name: Save Public IP of EC2 Instance
-          command: |
-            echo $INSTANCE_PUBLIC_IP > /tmp/INSTANCE_PUBLIC_IP.txt
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - INSTANCE_PUBLIC_IP.txt
-
-
-  execute_serverspec:
-    executor: my-executor
-    steps:
-      - checkout
-      - aws-cli/install
-      - attach_workspace:
-          at: /tmp
-      - run:
-          name: Load Public IP of EC2 Instance
-          command: |
-            echo "export INSTANCE_PUBLIC_IP=$(cat /tmp/INSTANCE_PUBLIC_IP.txt)" >> $BASH_ENV
-            source $BASH_ENV
-      - run:
-          name: Install Ansible
-          command: pip install ansible
-      - run:
-          name: Update Ansible Inventory
-          command: |
-            echo "[your_target_host_or_group]" > ansible/inventory.ini
-            echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
-      - run:
-          name: Run Ansible Playbook
-          command: |
-            export ANSIBLE_SSH_ARGS='-i ec2-key.pem -o StrictHostKeyChecking=no'
-            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_test.yml
-      - run:
-          name: Establish SSH connection and execute ServerSpec
-          command: |
-            SSH_COMMAND="ssh -i ec2-key.pem -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
-            if ! $SSH_COMMAND 'cd my_serverspec_tests && rake spec'; then
-              exit 1
-            fi
+    execute_serverspec:
+        executor: my-executor
+        steps:
+            - checkout
+            - aws-cli/install
+            - attach_workspace:
+                  at: /tmp
+            - attach_workspace:
+                  at: /workspace
+            - run:
+                  name: Load Public IP of EC2 Instance
+                  command: |
+                      echo "export INSTANCE_PUBLIC_IP=$(cat /tmp/INSTANCE_PUBLIC_IP.txt)" >> $BASH_ENV
+                      source $BASH_ENV
+            - run:
+                  name: Install Ansible
+                  command: pip install ansible
+            - run:
+                  name: Update Ansible Inventory
+                  command: |
+                      echo "[your_target_host_or_group]" > ansible/inventory.ini
+                      echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
+            - run:
+                  name: Run Ansible Playbook
+                  command: |
+                      export ANSIBLE_SSH_ARGS='-i ec2-key.pem -o StrictHostKeyChecking=no'
+                      ansible-playbook -i ansible/inventory.ini ansible/picture_upload_test.yml
+            - run:
+                  name: Establish SSH connection and execute ServerSpec
+                  command: |
+                      SSH_COMMAND="ssh -i /workspace/ec2-key.pem -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
+                      if ! $SSH_COMMAND 'cd my_serverspec_tests && rake spec'; then
+                        exit 1
+                      fi
 #      - run:
 #         name: Run Ansible Playbook for Serverspec
 #         command: |
 #            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
 #            ansible-playbook -i ansible/inventory.ini ansible/rspec_run.yml || true
 
-
 workflows:
-  version: 2
-  deploy:
-    jobs:
-      - deploy-vpc
-      - deploy-ec2:
-          requires:
+    version: 2
+    deploy:
+        jobs:
             - deploy-vpc
-      - deploy-rds:
-          requires:
-            - deploy-ec2
-      - deploy-alb:
-          requires:
-            - deploy-rds
-      - deploy-s3:
-          requires:
-            - deploy-alb     
-      - run-ansible:
-          requires:
-            - deploy-s3
-      - execute_serverspec:
-          requires:
-            - run-ansible
+            - deploy-ec2:
+                  requires:
+                      - deploy-vpc
+            - deploy-rds:
+                  requires:
+                      - deploy-ec2
+            - deploy-alb:
+                  requires:
+                      - deploy-rds
+            - deploy-s3:
+                  requires:
+                      - deploy-alb
+            - run-ansible:
+                  requires:
+                      - deploy-s3
+            - execute_serverspec:
+                  requires:
+                      - run-ansible

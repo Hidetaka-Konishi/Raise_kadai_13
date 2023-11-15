@@ -23,7 +23,7 @@ Resources:
             DBInstanceClass: "db.t3.micro"
             Engine: "mysql"
             MasterUsername: "admin"
-            MasterUserPassword: '{{resolve:ssm-secure:picture-upload}}'
+            MasterUserPassword: '{{resolve:ssm-secure:rds_master_password}}'
             PreferredBackupWindow: "08:19-08:49"
             BackupRetentionPeriod: 1
             AvailabilityZone: !Sub "${AWS::Region}b"
