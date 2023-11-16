@@ -4,7 +4,7 @@ require 'spec_helper'
 listen_port = 8080
 
 describe package('nginx') do
-  it { should be_installed }
+  it { should_not be_installed }
 end
 
 describe port(listen_port) do
