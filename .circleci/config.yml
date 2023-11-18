@@ -35,6 +35,7 @@ jobs:
               --template-file cloudformation/picture-upload-ec2.yml \
               --stack-name raise13-ec2 \
               --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc
+              --capabilities CAPABILITY_NAMED_IAM
 
       - run:
           name: Get Public IP of EC2 Instance
