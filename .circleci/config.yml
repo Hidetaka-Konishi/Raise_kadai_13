@@ -20,7 +20,7 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-vpc.yml \
               --stack-name raise13-vpc \
-              --parameter-overrides Prefix=raise13-vpc
+              --parameter-overrides Prefix=raise13-vpc \
               --capabilities CAPABILITY_NAMED_IAM
 
 
@@ -35,7 +35,7 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-ec2.yml \
               --stack-name raise13-ec2 \
-              --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc
+              --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc \
               --capabilities CAPABILITY_NAMED_IAM
 
       - run:
@@ -59,7 +59,7 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-rds.yml \
               --stack-name raise13-rds \
-              --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
+              --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2 \
               --capabilities CAPABILITY_NAMED_IAM
           no_output_timeout: 30m
 
@@ -75,7 +75,7 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-alb.yml \
               --stack-name raise13-alb \
-              --parameter-overrides Prefix=raise13-alb VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
+              --parameter-overrides Prefix=raise13-alb VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2 \
               --capabilities CAPABILITY_NAMED_IAM
       - run:
           name: Get DNS Name of ALB
@@ -98,7 +98,7 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-s3.yml \
               --stack-name raise13-s3 \
-              --parameter-overrides Prefix=raise13-s3
+              --parameter-overrides Prefix=raise13-s3 \
               --capabilities CAPABILITY_NAMED_IAM
       - run:
           name: Get S3 Bucket Name of S3
