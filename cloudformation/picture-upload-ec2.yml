@@ -10,37 +10,9 @@ Parameters:
     Description: Fill in the prefixes listed in the VPC.
 
 Resources:
-    EC2Role:
-        Type: "AWS::IAM::Role"
-        Properties:
-            RoleName: !Sub "${Prefix}-ec2-role"
-            AssumeRolePolicyDocument:
-                Version: "2012-10-17"
-                Statement:
-                    - Effect: "Allow"
-                      Principal:
-                          Service:
-                              - "ec2.amazonaws.com"
-                      Action:
-                          - "sts:AssumeRole"
-            ManagedPolicyArns:
-                - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-            Path: "/"
-            Tags:
-                - Key: "Name"
-                  Value: !Sub ${Prefix}-ec2-role
-
-    EC2InstanceProfile:
-        Type: "AWS::IAM::InstanceProfile"
-        Properties:
-            Roles: 
-                - !Ref EC2Role
-            InstanceProfileName: !Sub "${Prefix}-ec2-instance-profile"
-
     EC2Instance:
         Type: "AWS::EC2::Instance"
         Properties:
-            IamInstanceProfile: !Ref EC2InstanceProfile
             NetworkInterfaces:
                 - DeviceIndex: "0"
                   SubnetId: !ImportValue
@@ -69,6 +41,33 @@ Resources:
                 Configured: false
             EnclaveOptions: 
                 Enabled: false
+            IamInstanceProfile: !Ref EC2InstanceProfile
+
+    EC2InstanceProfile:
+      Type: "AWS::IAM::InstanceProfile"
+      Properties:
+        Roles: 
+          - !Ref EC2Role
+
+    EC2Role:
+      Type: "AWS::IAM::Role"
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Service: "ec2.amazonaws.com"
+              Action: "sts:AssumeRole"
+        Path: "/"
+        Policies:
+          - PolicyName: "S3AccessPolicy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action: "s3:*"
+                  Resource: "*"
 
     EC2SecurityGroup1:
         Type: "AWS::EC2::SecurityGroup"
