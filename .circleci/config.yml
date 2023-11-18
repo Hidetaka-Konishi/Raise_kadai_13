@@ -105,7 +105,7 @@ jobs:
           command: |
             S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
               --stack-name raise13-s3 \
-              --query 'Stacks[0].Outputs[?OutputKey==`S3Bucket`].OutputValue' \
+              --query 'Stacks[0].Outputs[?OutputKey==`S3BucketName`].OutputValue' \
               --output text)
             echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $BASH_ENV
 
@@ -138,7 +138,7 @@ jobs:
           command: |
             S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
               --stack-name raise13-s3 \
-              --query 'Stacks[0].Outputs[?OutputKey==`S3Bucket`].OutputValue' \
+              --query 'Stacks[0].Outputs[?OutputKey==`S3BucketName`].OutputValue' \
               --output text)
             echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $BASH_ENV
       - run:
