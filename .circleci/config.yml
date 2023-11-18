@@ -82,6 +82,7 @@ jobs:
               --output text)
             echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
 
+
   deploy-s3:
     executor: my-executor
     steps:
@@ -94,6 +95,14 @@ jobs:
               --template-file cloudformation/picture-upload-s3.yml \
               --stack-name raise13-s3 \
               --parameter-overrides Prefix=raise13-s3
+      - run:
+          name: Get S3 Bucket Name of S3
+          command: |
+            S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raise13-s3 \
+              --query 'Stacks[0].Outputs[?OutputKey==`S3Bucket`].OutputValue' \
+              --output text)
+            echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $BASH_ENV
 
 
   run-ansible:
@@ -120,6 +129,14 @@ jobs:
               --output text)
             echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
       - run:
+          name: Retrieve S3 Bucket Name
+          command: |
+            S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raise13-s3 \
+              --query 'Stacks[0].Outputs[?OutputKey==`S3Bucket`].OutputValue' \
+              --output text)
+            echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $BASH_ENV
+      - run:
           name: Install Ansible
           command: pip install ansible
       - run:
@@ -129,6 +146,8 @@ jobs:
             echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
             echo "[your_target_host_or_group:vars]" >> ansible/inventory.ini
             echo "alb_dns_name=$ALB_DNS_NAME" >> ansible/inventory.ini
+            echo "s3_buket_name=$S3_BUCKET_NAME" >> ansible/inventory.ini
+            echo "region=us-east-1" >> ansible/inventory.ini
             echo "ruby_version=3.1.2" >> ansible/inventory.ini
             echo "bundler_version=2.3.14" >> ansible/inventory.ini
             echo "nvm_version=0.39.5" >> ansible/inventory.ini
@@ -146,6 +165,7 @@ jobs:
           root: /tmp
           paths:
             - INSTANCE_PUBLIC_IP.txt
+
 
   execute_serverspec:
     executor: my-executor

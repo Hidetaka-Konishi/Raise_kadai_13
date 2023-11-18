@@ -1,10 +1,9 @@
-exec("source ~/.bash_profile")
 require 'spec_helper'
 
 listen_port = 8080
 
 describe package('nginx') do
-  it { should_not be_installed }
+  it { should be_installed }
 end
 
 describe port(listen_port) do

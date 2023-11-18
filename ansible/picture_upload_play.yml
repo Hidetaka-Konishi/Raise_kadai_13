@@ -266,8 +266,8 @@
   hosts: your_target_host_or_group
   become: yes
   vars:
-    s3_access_key_id: "{{ lookup('env', 'S3_ACCESS_KEY_ID') }}"
-    s3_secret_access_key: "{{ lookup('env', 'S3_SECRET_ACCESS_KEY') }}"
+    S3_BUKET_NAME: "{{ s3_buket_name }}" 
+    REGION: "{{ region }}"
   tasks:
     - name: Create strage.yml
       template:
