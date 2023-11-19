@@ -136,6 +136,7 @@
         become: true
         pip:
             name: PyMySQL
+            executable: /usr/bin/pip3
 
       - name: Install Boto3 and Botocore for /usr/bin/python3
         become: true
@@ -143,7 +144,7 @@
             name:
               - boto3
               - botocore
-            executable: /usr/bin/python3
+            executable: /usr/bin/pip3
 
       - name: Retrieve RDS credentials from SSM
         set_fact:
