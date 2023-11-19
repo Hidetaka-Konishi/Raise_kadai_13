@@ -141,18 +141,18 @@
       mysql_db:
         name: "Raise13"
         state: present
-        login_host: "{{ lookup('env', 'RDS_ENDPOINT') }}"
-        login_user: "{{ lookup('env', 'RDS_MASTER_USERNAME') }}"
-        login_password: "{{ lookup('env', 'RDS_MASTER_PASSWORD') }}"
+        login_host: "{{ rds_endpoint }}"
+        login_user: "admin"
+        login_password: "{{ lookup('aws_ssm', 'rds_master_password', region=region) }}"
 
 - name: Deploy database.yml from template
   hosts: your_target_host_or_group
   vars:
     database_table_name: "Raise13"
-    default_username: "{{ lookup('env', 'RDS_MASTER_USERNAME') }}"
-    default_password: "{{ lookup('env', 'RDS_MASTER_PASSWORD') }}"
-    development_test_host: "{{ lookup('env', 'RDS_ENDPOINT') }}"
-    development_test_port: 3306
+    database_username: "admin"
+    database_password: "{{ lookup('aws_ssm', 'rds_master_password', region=region) }}"
+    database_endpoint: "{{ rds_endpoint }}"
+    database_port: 3306
   tasks:
     - name: Create database.yml from template
       template:
@@ -266,8 +266,8 @@
   hosts: your_target_host_or_group
   become: yes
   vars:
-    s3_access_key_id: "{{ lookup('env', 'S3_ACCESS_KEY_ID') }}"
-    s3_secret_access_key: "{{ lookup('env', 'S3_SECRET_ACCESS_KEY') }}"
+    S3_BUKET_NAME: "{{ s3_buket_name }}" 
+    REGION: "{{ region }}"
   tasks:
     - name: Create strage.yml
       template:
@@ -304,12 +304,24 @@
   become: yes
   become_user: ec2-user
   tasks:
-    - name: db:migrate run
+    - name: Check if migrations are needed
+      shell: >
+        cd /home/ec2-user/raisetech-live8-sample-app &&
+        bin/rails runner "exit ActiveRecord::Base.connection.migration_context.needs_migration? ? 1 : 0"
+      environment:
+        RAILS_ENV: development
+      args:
+        executable: /bin/bash
+      register: migrations_needed
+      ignore_errors: yes
+
+    - name: db:migrate run if needed
       shell: cd /home/ec2-user/raisetech-live8-sample-app && bin/rails db:migrate RAILS_ENV=development
       environment:
         RAILS_ENV: development
       args:
         executable: /bin/bash
+      when: migrations_needed.rc == 1
 
 - name: Start nginx service
   hosts: your_target_host_or_group

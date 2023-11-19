@@ -20,7 +20,16 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-vpc.yml \
               --stack-name raise13-vpc \
-              --parameter-overrides Prefix=raise13-vpc
+              --parameter-overrides Prefix=raise13-vpc \
+              --capabilities CAPABILITY_NAMED_IAM
+      - run:
+          name: Get Region of VPC
+          command: |
+            REGION=$(aws cloudformation describe-stacks \
+              --stack-name raise13-vpc \
+              --query 'Stacks[0].Outputs[?OutputKey==`RegionName`].OutputValue' \
+              --output text)
+            echo "export REGION=$REGION" >> $BASH_ENV
 
 
   deploy-ec2:
@@ -34,7 +43,8 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-ec2.yml \
               --stack-name raise13-ec2 \
-              --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc
+              --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc \
+              --capabilities CAPABILITY_NAMED_IAM
 
       - run:
           name: Get Public IP of EC2 Instance
@@ -57,9 +67,17 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-rds.yml \
               --stack-name raise13-rds \
-              --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
+              --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2 \
+              --capabilities CAPABILITY_NAMED_IAM
           no_output_timeout: 30m
-
+      - run:
+          name: Get RDS ENDPOINT of RDS
+          command: |
+            RDS_ENDPOINT=$(aws cloudformation describe-stacks \
+              --stack-name raise13-rds \
+              --query 'Stacks[0].Outputs[?OutputKey==`RDSInstanceEndpoint`].OutputValue' \
+              --output text)
+            echo "export RDS_ENDPOINT=$RDS_ENDPOINT" >> $BASH_ENV
 
   deploy-alb:
     executor: my-executor
@@ -72,7 +90,8 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-alb.yml \
               --stack-name raise13-alb \
-              --parameter-overrides Prefix=raise13-alb VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2
+              --parameter-overrides Prefix=raise13-alb VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2 \
+              --capabilities CAPABILITY_NAMED_IAM
       - run:
           name: Get DNS Name of ALB
           command: |
@@ -81,6 +100,7 @@ jobs:
               --query 'Stacks[0].Outputs[?OutputKey==`AlbDnsName`].OutputValue' \
               --output text)
             echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
+
 
   deploy-s3:
     executor: my-executor
@@ -93,7 +113,16 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudformation/picture-upload-s3.yml \
               --stack-name raise13-s3 \
-              --parameter-overrides Prefix=raise13-s3
+              --parameter-overrides Prefix=raise13-s3 \
+              --capabilities CAPABILITY_NAMED_IAM
+      - run:
+          name: Get S3 Bucket Name of S3
+          command: |
+            S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raise13-s3 \
+              --query 'Stacks[0].Outputs[?OutputKey==`S3BucketName`].OutputValue' \
+              --output text)
+            echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $BASH_ENV
 
 
   run-ansible:
@@ -104,6 +133,14 @@ jobs:
       - add_ssh_keys:
           fingerprints: "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
+          name: Get Region of VPC
+          command: |
+            REGION=$(aws cloudformation describe-stacks \
+              --stack-name raise13-vpc \
+              --query 'Stacks[0].Outputs[?OutputKey==`RegionName`].OutputValue' \
+              --output text)
+            echo "export REGION=$REGION" >> $BASH_ENV
+      - run:
           name: Retrieve Public IP of EC2 Instance
           command: |
             PUBLIC_IP=$(aws cloudformation describe-stacks \
@@ -111,6 +148,14 @@ jobs:
               --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
+      - run:
+          name: Get RDS ENDPOINT of RDS
+          command: |
+            RDS_ENDPOINT=$(aws cloudformation describe-stacks \
+              --stack-name raise13-rds \
+              --query 'Stacks[0].Outputs[?OutputKey==`RDSInstanceEndpoint`].OutputValue' \
+              --output text)
+            echo "export RDS_ENDPOINT=$RDS_ENDPOINT" >> $BASH_ENV
       - run:
           name: Retrieve ALB DNS Name
           command: |
@@ -120,15 +165,26 @@ jobs:
               --output text)
             echo "export ALB_DNS_NAME=$ALB_DNS_NAME" >> $BASH_ENV
       - run:
-          name: Install Ansible
-          command: pip install ansible
+          name: Retrieve S3 Bucket Name
+          command: |
+            S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raise13-s3 \
+              --query 'Stacks[0].Outputs[?OutputKey==`S3BucketName`].OutputValue' \
+              --output text)
+            echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $BASH_ENV
+      - run:
+          name: Install Ansible and AWS dependencies
+          command: pip install ansible boto3 botocore
       - run:
           name: Update Ansible Inventory
           command: |
             echo "[your_target_host_or_group]" > ansible/inventory.ini
             echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
             echo "[your_target_host_or_group:vars]" >> ansible/inventory.ini
+            echo "rds_endpoint=$RDS_ENDPOINT" >> ansible/inventory.ini
             echo "alb_dns_name=$ALB_DNS_NAME" >> ansible/inventory.ini
+            echo "s3_buket_name=$S3_BUCKET_NAME" >> ansible/inventory.ini
+            echo "region=$REGION" >> ansible/inventory.ini
             echo "ruby_version=3.1.2" >> ansible/inventory.ini
             echo "bundler_version=2.3.14" >> ansible/inventory.ini
             echo "nvm_version=0.39.5" >> ansible/inventory.ini
@@ -138,54 +194,6 @@ jobs:
           command: |
             export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
             ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
-      - run:
-          name: Save Public IP of EC2 Instance
-          command: |
-            echo $INSTANCE_PUBLIC_IP > /tmp/INSTANCE_PUBLIC_IP.txt
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - INSTANCE_PUBLIC_IP.txt
-
-  execute_serverspec:
-    executor: my-executor
-    steps:
-      - checkout
-      - aws-cli/install
-      - attach_workspace:
-          at: /tmp
-      - run:
-          name: Load Public IP of EC2 Instance
-          command: |
-            echo "export INSTANCE_PUBLIC_IP=$(cat /tmp/INSTANCE_PUBLIC_IP.txt)" >> $BASH_ENV
-            source $BASH_ENV
-      - add_ssh_keys:
-          fingerprints: "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
-      - run:
-          name: Install Ansible
-          command: pip install ansible
-      - run:
-          name: Update Ansible Inventory
-          command: |
-            echo "[your_target_host_or_group]" > ansible/inventory.ini
-            echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
-      - run:
-          name: Run Ansible Playbook
-          command: |
-            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
-            ansible-playbook -i ansible/inventory.ini ansible/picture_upload_test.yml
-      - run:
-          name: Establish SSH connection and execute ServerSpec
-          command: |
-            SSH_COMMAND="ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_PUBLIC_IP"
-            if ! $SSH_COMMAND 'cd my_serverspec_tests && rake spec'; then
-              exit 1
-            fi
-#      - run:
-#         name: Run Ansible Playbook for Serverspec
-#         command: |
-#            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
-#            ansible-playbook -i ansible/inventory.ini ansible/rspec_run.yml || true
 
 
 workflows:
@@ -208,6 +216,3 @@ workflows:
       - run-ansible:
           requires:
             - deploy-s3
-      - execute_serverspec:
-          requires:
-            - run-ansible

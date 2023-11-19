@@ -36,7 +36,6 @@ Resources:
             StorageType: "gp2"
             Port: "3306"
             StorageEncrypted: true
-            # KmsKeyId: !Sub "arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/623421e8-f259-4d7f-9b9b-f8bc1921d999"
             CopyTagsToSnapshot: true
             MonitoringInterval: 0
             EnableIAMDatabaseAuthentication: false
@@ -79,3 +78,8 @@ Resources:
               - 
                 CidrIp: "0.0.0.0/0"
                 IpProtocol: "-1"
+
+Outputs:
+  RDSInstanceEndpoint:
+    Description: "The endpoint address of the RDS instance"
+    Value: !GetAtt RDSDBInstance.Endpoint.Address

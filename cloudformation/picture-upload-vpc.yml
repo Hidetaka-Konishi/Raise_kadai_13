@@ -188,3 +188,7 @@ Outputs:
         Value: !Ref EC2Subnet4
         Export:
             Name: !Sub "${Prefix}-SubnetId4"
+
+    RegionName:
+        Description: "Name of the AWS Region"
+        Value: !Ref "AWS::Region"
