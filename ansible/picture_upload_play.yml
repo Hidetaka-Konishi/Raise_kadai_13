@@ -303,7 +303,9 @@
   become_user: ec2-user
   tasks:
     - name: Check if migrations are needed
-      shell: cd /home/ec2-user/raisetech-live8-sample-app && bin/rails runner "exit ActiveRecord::Migrator.needs_migration?"
+      shell: >
+        cd /home/ec2-user/raisetech-live8-sample-app &&
+        bin/rails runner "exit ActiveRecord::Base.connection.migration_context.needs_migration? ? 1 : 0"
       environment:
         RAILS_ENV: development
       args:
