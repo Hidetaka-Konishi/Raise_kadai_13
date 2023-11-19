@@ -137,19 +137,18 @@
         pip:
             name: PyMySQL
 
+      - name: Install Boto3 and Botocore
+        become: true
+        pip:
+            name:
+              - boto3
+              - botocore
+
       - name: Retrieve RDS credentials from SSM
         set_fact:
             RDS_ENDPOINT: "{{ lookup('aws_ssm', 'rds_endpoint', region=region) }}"
             RDS_MASTER_USERNAME: "{{ lookup('aws_ssm', 'rds_master_username', region=region) }}"
             RDS_MASTER_PASSWORD: "{{ lookup('aws_ssm', 'rds_master_password', region=region) }}"
-
-      - name: Create database
-        mysql_db:
-            name: "Raise13"
-            state: present
-            login_host: "{{ RDS_ENDPOINT }}"
-            login_user: "{{ RDS_MASTER_USERNAME }}"
-            login_password: "{{ RDS_MASTER_PASSWORD }}"
 
 - name: Deploy database.yml from template using SSM
   hosts: your_target_host_or_group
