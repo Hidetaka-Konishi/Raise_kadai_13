@@ -124,7 +124,7 @@
 - name: Create MySQL database
   hosts: your_target_host_or_group
   vars:
-      ansible_python_interpreter: /usr/bin/python3
+      ansible_python_interpreter: /usr/local/bin/python3
   tasks:
       - name: Install pip3 if not exists
         become: true
