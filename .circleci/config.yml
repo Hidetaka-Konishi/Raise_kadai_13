@@ -22,6 +22,14 @@ jobs:
               --stack-name raise13-vpc \
               --parameter-overrides Prefix=raise13-vpc \
               --capabilities CAPABILITY_NAMED_IAM
+      - run:
+          name: Get Region of VPC
+          command: |
+            REGION=$(aws cloudformation describe-stacks \
+              --stack-name raise13-vpc \
+              --query 'Stacks[0].Outputs[?OutputKey==`RegionName`].OutputValue' \
+              --output text)
+            echo "export REGION=$REGION" >> $BASH_ENV
 
 
   deploy-ec2:
@@ -125,6 +133,14 @@ jobs:
       - add_ssh_keys:
           fingerprints: "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
+          name: Get Region of VPC
+          command: |
+            REGION=$(aws cloudformation describe-stacks \
+              --stack-name raise13-vpc \
+              --query 'Stacks[0].Outputs[?OutputKey==`RegionName`].OutputValue' \
+              --output text)
+            echo "export REGION=$REGION" >> $BASH_ENV
+      - run:
           name: Retrieve Public IP of EC2 Instance
           command: |
             PUBLIC_IP=$(aws cloudformation describe-stacks \
@@ -168,7 +184,7 @@ jobs:
             echo "rds_endpoint=$RDS_ENDPOINT" >> ansible/inventory.ini
             echo "alb_dns_name=$ALB_DNS_NAME" >> ansible/inventory.ini
             echo "s3_buket_name=$S3_BUCKET_NAME" >> ansible/inventory.ini
-            echo "region=us-east-1" >> ansible/inventory.ini
+            echo "region=$REGION" >> ansible/inventory.ini
             echo "ruby_version=3.1.2" >> ansible/inventory.ini
             echo "bundler_version=2.3.14" >> ansible/inventory.ini
             echo "nvm_version=0.39.5" >> ansible/inventory.ini
