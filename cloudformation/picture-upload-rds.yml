@@ -83,7 +83,3 @@ Outputs:
   RDSInstanceEndpoint:
     Description: "The endpoint address of the RDS instance"
     Value: !GetAtt RDSDBInstance.Endpoint.Address
-
-  RDSMasterUserPassword:
-    Description: "The master user password for the RDS instance"
-    Value: '{{resolve:ssm-secure:picture-upload}}'
