@@ -142,8 +142,8 @@ jobs:
               --output text)
             echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $BASH_ENV
       - run:
-          name: Install Ansible
-          command: pip install ansible
+          name: Install Ansible and AWS dependencies
+          command: pip install ansible boto3 botocore
       - run:
           name: Update Ansible Inventory
           command: |
