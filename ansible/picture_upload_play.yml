@@ -124,33 +124,35 @@
 - name: Create MySQL database
   hosts: your_target_host_or_group
   vars:
-      ansible_python_interpreter: /usr/bin/python3
+    ansible_python_interpreter: /usr/bin/python3
   tasks:
-      - name: Install pip3 if not exists
-        become: true
-        package:
-            name: python3-pip
-            state: present
+    - name: Install pip3 if not exists
+      become: true
+      package:
+        name: python3-pip
+        state: present
 
-      - name: Install PyMySQL
-        become: true
-        pip:
-            name: PyMySQL
+    - name: Install PyMySQL
+      become: true
+      pip:
+        name: PyMySQL
 
-      - name: Retrieve RDS credentials from SSM
-        set_fact:
-            RDS_ENDPOINT: "{{ lookup('aws_ssm', 'rds_endpoint', region=region) }}"
-            RDS_MASTER_USERNAME: "{{ lookup('aws_ssm', 'rds_master_username', region=region) }}"
-            RDS_MASTER_PASSWORD: "{{ lookup('aws_ssm', 'rds_master_password', region=region) }}"
+    - name: Create database
+      mysql_db:
+        name: "Raise13"
+        state: present
+        login_host: "{{ rds_endpoint }}"
+        login_user: "admin"
+        login_password: "{{ rds_password }}"
 
-- name: Deploy database.yml from template using SSM
+- name: Deploy database.yml from template
   hosts: your_target_host_or_group
   vars:
     database_table_name: "Raise13"
-    default_username: "{{ lookup('aws_ssm', 'rds_master_username', region=region) }}"
-    default_password: "{{ lookup('aws_ssm', 'rds_master_password', region=region) }}"
-    development_test_host: "{{ lookup('aws_ssm', 'rds_endpoint', region=region) }}"
-    development_test_port: 3306
+    database_username: "admin"
+    database_password: "{{ rds_password }}"
+    database_endpoint: "{{ rds_endpoint }}"
+    database_port: 3306
   tasks:
     - name: Create database.yml from template
       template:
@@ -158,7 +160,7 @@
         dest: /home/ec2-user/raisetech-live8-sample-app/config/database.yml
         owner: ec2-user
         group: ec2-user
-        mode: "0664"
+        mode: '0664'
 
 - name: Execute curl command in /home/ec2-user/raisetech-live8-sample-app
   hosts: your_target_host_or_group
@@ -302,12 +304,24 @@
   become: yes
   become_user: ec2-user
   tasks:
-    - name: db:migrate run
+    - name: Check if migrations are needed
+      shell: >
+        cd /home/ec2-user/raisetech-live8-sample-app &&
+        bin/rails runner "exit ActiveRecord::Base.connection.migration_context.needs_migration? ? 1 : 0"
+      environment:
+        RAILS_ENV: development
+      args:
+        executable: /bin/bash
+      register: migrations_needed
+      ignore_errors: yes
+
+    - name: db:migrate run if needed
       shell: cd /home/ec2-user/raisetech-live8-sample-app && bin/rails db:migrate RAILS_ENV=development
       environment:
         RAILS_ENV: development
       args:
         executable: /bin/bash
+      when: migrations_needed.rc == 1
 
 - name: Start nginx service
   hosts: your_target_host_or_group

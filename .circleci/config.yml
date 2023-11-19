@@ -62,7 +62,22 @@ jobs:
               --parameter-overrides Prefix=raise13-rds VPCPrefix=raise13-vpc EC2Prefix=raise13-ec2 \
               --capabilities CAPABILITY_NAMED_IAM
           no_output_timeout: 30m
-
+      - run:
+          name: Get RDS ENDPOINT of RDS
+          command: |
+            RDS_ENDPOINT=$(aws cloudformation describe-stacks \
+              --stack-name raise13-rds \
+              --query 'Stacks[0].Outputs[?OutputKey==`RDSInstanceEndpoint`].OutputValue' \
+              --output text)
+            echo "export RDS_ENDPOINT=$RDS_ENDPOINT" >> $BASH_ENV
+      - run:
+          name: Get RDS MASTER PASSWORD of RDS
+          command: |
+            RDS_PASSWORD=$(aws cloudformation describe-stacks \
+              --stack-name raise13-rds \
+              --query 'Stacks[0].Outputs[?OutputKey==`RDSMasterUserPassword`].OutputValue' \
+              --output text)
+            echo "export RDS_PASSWORD=$RDS_PASSWORD" >> $BASH_ENV
 
   deploy-alb:
     executor: my-executor
@@ -126,6 +141,22 @@ jobs:
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
       - run:
+          name: Get RDS ENDPOINT of RDS
+          command: |
+            RDS_ENDPOINT=$(aws cloudformation describe-stacks \
+              --stack-name raise13-rds \
+              --query 'Stacks[0].Outputs[?OutputKey==`RDSInstanceEndpoint`].OutputValue' \
+              --output text)
+            echo "export RDS_ENDPOINT=$RDS_ENDPOINT" >> $BASH_ENV
+      - run:
+          name: Get RDS MASTER PASSWORD of RDS
+          command: |
+            RDS_PASSWORD=$(aws cloudformation describe-stacks \
+              --stack-name raise13-rds \
+              --query 'Stacks[0].Outputs[?OutputKey==`RDSMasterUserPassword`].OutputValue' \
+              --output text)
+            echo "export RDS_PASSWORD=$RDS_PASSWORD" >> $BASH_ENV
+      - run:
           name: Retrieve ALB DNS Name
           command: |
             ALB_DNS_NAME=$(aws cloudformation describe-stacks \
@@ -143,13 +174,15 @@ jobs:
             echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $BASH_ENV
       - run:
           name: Install Ansible and AWS dependencies
-          command: pip install ansible boto3 botocore
+          command: pip install ansible
       - run:
           name: Update Ansible Inventory
           command: |
             echo "[your_target_host_or_group]" > ansible/inventory.ini
             echo "$INSTANCE_PUBLIC_IP ansible_ssh_user=ec2-user" >> ansible/inventory.ini
             echo "[your_target_host_or_group:vars]" >> ansible/inventory.ini
+            echo "rds_endpoint=$RDS_ENDPOINT" >> ansible/inventory.ini
+            echo "rds_password=$RDS_PASSWORD" >> ansible/inventory.ini
             echo "alb_dns_name=$ALB_DNS_NAME" >> ansible/inventory.ini
             echo "s3_buket_name=$S3_BUCKET_NAME" >> ansible/inventory.ini
             echo "region=us-east-1" >> ansible/inventory.ini
