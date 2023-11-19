@@ -61,7 +61,15 @@ jobs:
               --query 'Stacks[0].Outputs[?OutputKey==`InstancePublicIp`].OutputValue' \
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
-
+      - run:
+          name: Download Private Key
+          command: |
+            aws ec2 describe-key-pairs \
+              --key-names $KEY_NAME \
+              --query 'KeyPairs[0].KeyMaterial' \
+              --output text > $KEY_NAME.pem
+            chmod 400 $KEY_NAME.pem
+            echo "export PRIVATE_KEY_PATH=$PWD/$KEY_NAME.pem" >> $BASH_ENV
 
   deploy-rds:
     executor: my-executor
