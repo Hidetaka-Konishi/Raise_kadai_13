@@ -302,24 +302,12 @@
   become: yes
   become_user: ec2-user
   tasks:
-    - name: Check if migrations are needed
-      shell: >
-        cd /home/ec2-user/raisetech-live8-sample-app &&
-        bin/rails runner "exit ActiveRecord::Base.connection.migration_context.needs_migration? ? 1 : 0"
-      environment:
-        RAILS_ENV: development
-      args:
-        executable: /bin/bash
-      register: migrations_needed
-      ignore_errors: yes
-
-    - name: db:migrate run if needed
+    - name: db:migrate run
       shell: cd /home/ec2-user/raisetech-live8-sample-app && bin/rails db:migrate RAILS_ENV=development
       environment:
         RAILS_ENV: development
       args:
         executable: /bin/bash
-      when: migrations_needed.rc == 1
 
 - name: Start nginx service
   hosts: your_target_host_or_group
