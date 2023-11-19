@@ -143,7 +143,7 @@
             name:
               - boto3
               - botocore
-            executable: /usr/bin/python3 -m pip
+            executable: /usr/bin/python3
 
       - name: Retrieve RDS credentials from SSM
         set_fact:
