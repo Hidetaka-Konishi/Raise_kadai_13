@@ -45,7 +45,14 @@ jobs:
               --stack-name raise13-ec2 \
               --parameter-overrides Prefix=raise13-ec2 VPCPrefix=raise13-vpc \
               --capabilities CAPABILITY_NAMED_IAM
-
+      - run:
+          name: Get EC2 Key Pair
+          command: |
+            KEY_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raise13-ec2 \
+              --query 'Stacks[0].Outputs[?OutputKey==`KeyName`].OutputValue' \
+              --output text)
+            echo "export KEY_NAME=$KEY_NAME" >> $BASH_ENV
       - run:
           name: Get Public IP of EC2 Instance
           command: |
@@ -130,16 +137,22 @@ jobs:
     steps:
       - checkout
       - aws-cli/install
-      - add_ssh_keys:
-          fingerprints: "43:28:09:65:e3:c2:b2:30:81:95:c1:f2:30:f3:8d:a3"
       - run:
-          name: Get Region of VPC
+          name: Retrieve Region of VPC
           command: |
             REGION=$(aws cloudformation describe-stacks \
               --stack-name raise13-vpc \
               --query 'Stacks[0].Outputs[?OutputKey==`RegionName`].OutputValue' \
               --output text)
             echo "export REGION=$REGION" >> $BASH_ENV
+      - run:
+          name: Retrieve EC2 Key Pair
+          command: |
+            KEY_NAME=$(aws cloudformation describe-stacks \
+              --stack-name raise13-ec2 \
+              --query 'Stacks[0].Outputs[?OutputKey==`KeyName`].OutputValue' \
+              --output text)
+            echo "export KEY_NAME=$KEY_NAME" >> $BASH_ENV
       - run:
           name: Retrieve Public IP of EC2 Instance
           command: |
@@ -149,7 +162,7 @@ jobs:
               --output text)
             echo "export INSTANCE_PUBLIC_IP=$PUBLIC_IP" >> $BASH_ENV
       - run:
-          name: Get RDS ENDPOINT of RDS
+          name: Retrieve RDS ENDPOINT of RDS
           command: |
             RDS_ENDPOINT=$(aws cloudformation describe-stacks \
               --stack-name raise13-rds \
@@ -173,6 +186,15 @@ jobs:
               --output text)
             echo "export S3_BUCKET_NAME=$S3_BUCKET_NAME" >> $BASH_ENV
       - run:
+          name: Download Private Key
+          command: |
+            aws ec2 describe-key-pairs \
+              --key-names $KEY_NAME \
+              --query 'KeyPairs[0].KeyMaterial' \
+              --output text > $KEY_NAME.pem
+            chmod 400 $KEY_NAME.pem
+            echo "export PRIVATE_KEY_PATH=$PWD/$KEY_NAME.pem" >> $BASH_ENV
+      - run:
           name: Install Ansible and AWS dependencies
           command: pip install ansible boto3 botocore
       - run:
@@ -192,7 +214,8 @@ jobs:
       - run:
           name: Run Ansible Playbook
           command: |
-            export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no'
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            export ANSIBLE_PRIVATE_KEY_FILE=$PRIVATE_KEY_PATH
             ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
 
 

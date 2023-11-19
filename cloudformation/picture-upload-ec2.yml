@@ -10,6 +10,10 @@ Parameters:
     Description: Fill in the prefixes listed in the VPC.
 
 Resources:
+    EC2KeyPair:
+      Type: "AWS::EC2::KeyPair"
+      Properties:
+        KeyName: !Sub "${Prefix}-keypair"
     EC2Instance:
         Type: "AWS::EC2::Instance"
         Properties:
@@ -22,7 +26,7 @@ Resources:
                   AssociatePublicIpAddress: true
             ImageId: "ami-00c6177f250e07ec1"
             InstanceType: "t2.micro"
-            KeyName: "CircleCI"
+            KeyName: !Ref EC2KeyPair
             AvailabilityZone: !Sub "${AWS::Region}b"
             Tenancy: "default"
             EbsOptimized: false
@@ -107,3 +111,7 @@ Outputs:
     Value: !Ref EC2SecurityGroup1
     Export:
         Name: !Sub "${Prefix}-SecurityGroupId"
+
+  KeyName:
+    Description: "Name of the generated key pair"
+    Value: !Ref EC2KeyPair
