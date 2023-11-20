@@ -2,27 +2,27 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "EC2"
 
 Parameters:
-  Prefix:
-    Type: String
-    Description: Fill in the part that hits the prefix to give a unique name.
-  VPCPrefix:
-    Type: String
-    Description: Fill in the prefixes listed in the VPC.
+    Prefix:
+        Type: String
+        Description: Fill in the part that hits the prefix to give a unique name.
+    VPCPrefix:
+        Type: String
+        Description: Fill in the prefixes listed in the VPC.
 
 Resources:
     EC2KeyPair:
-      Type: "AWS::EC2::KeyPair"
-      Properties:
-        KeyName: !Sub "${Prefix}-keypair"
+        Type: "AWS::EC2::KeyPair"
+        Properties:
+            KeyName: !Sub "${Prefix}-keypair"
     EC2Instance:
         Type: "AWS::EC2::Instance"
         Properties:
             NetworkInterfaces:
                 - DeviceIndex: "0"
                   SubnetId: !ImportValue
-                    "Fn::Sub": "${VPCPrefix}-SubnetId1"
-                  GroupSet: 
-                    - !Ref EC2SecurityGroup1
+                      "Fn::Sub": "${VPCPrefix}-SubnetId1"
+                  GroupSet:
+                      - !Ref EC2SecurityGroup1
                   AssociatePublicIpAddress: true
             ImageId: "ami-00c6177f250e07ec1"
             InstanceType: "t2.micro"
@@ -31,87 +31,84 @@ Resources:
             Tenancy: "default"
             EbsOptimized: false
             SourceDestCheck: true
-            BlockDeviceMappings: 
+            BlockDeviceMappings:
                 - DeviceName: "/dev/xvda"
-                  Ebs: 
+                  Ebs:
                       Encrypted: false
                       VolumeSize: 8
                       VolumeType: "gp2"
                       DeleteOnTermination: true
-            Tags: 
+            Tags:
                 - Key: "Name"
                   Value: !Sub ${Prefix}-ec2
-            HibernationOptions: 
+            HibernationOptions:
                 Configured: false
-            EnclaveOptions: 
+            EnclaveOptions:
                 Enabled: false
             IamInstanceProfile: !Ref EC2InstanceProfile
 
     EC2InstanceProfile:
-      Type: "AWS::IAM::InstanceProfile"
-      Properties:
-        Roles: 
-          - !Ref EC2Role
+        Type: "AWS::IAM::InstanceProfile"
+        Properties:
+            Roles:
+                - !Ref EC2Role
 
     EC2Role:
-      Type: "AWS::IAM::Role"
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: "Allow"
-              Principal:
-                Service: "ec2.amazonaws.com"
-              Action: "sts:AssumeRole"
-        Path: "/"
-        Policies:
-          - PolicyName: "S3AccessPolicy"
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: "Allow"
-                  Action: "s3:*"
-                  Resource: "*"
+        Type: "AWS::IAM::Role"
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: "2012-10-17"
+                Statement:
+                    - Effect: "Allow"
+                      Principal:
+                          Service: "ec2.amazonaws.com"
+                      Action: "sts:AssumeRole"
+            Path: "/"
+            Policies:
+                - PolicyName: "S3AccessPolicy"
+                  PolicyDocument:
+                      Version: "2012-10-17"
+                      Statement:
+                          - Effect: "Allow"
+                            Action: "s3:*"
+                            Resource: "*"
 
     EC2SecurityGroup1:
         Type: "AWS::EC2::SecurityGroup"
         Properties:
             GroupDescription: "ec2-securitygroup1"
             VpcId: !ImportValue
-              "Fn::Sub": "${VPCPrefix}-VPCID"
-            SecurityGroupIngress: 
-              - 
-                CidrIp: "0.0.0.0/0"
-                FromPort: 8080
-                IpProtocol: "tcp"
-                ToPort: 8080
-              - 
-                CidrIp: "0.0.0.0/0"
-                FromPort: 22
-                IpProtocol: "tcp"
-                ToPort: 22
-            SecurityGroupEgress: 
-              - 
-                CidrIp: "0.0.0.0/0"
-                IpProtocol: "-1"
+                "Fn::Sub": "${VPCPrefix}-VPCID"
+            SecurityGroupIngress:
+                - CidrIp: "0.0.0.0/0"
+                  FromPort: 8080
+                  IpProtocol: "tcp"
+                  ToPort: 8080
+                - CidrIp: "0.0.0.0/0"
+                  FromPort: 22
+                  IpProtocol: "tcp"
+                  ToPort: 22
+            SecurityGroupEgress:
+                - CidrIp: "0.0.0.0/0"
+                  IpProtocol: "-1"
 
 Outputs:
-  InstanceId:
-    Description: "The ID of the EC2 Instance"
-    Value: !Ref EC2Instance
-    Export:
-        Name: !Sub "${Prefix}-InstanceId"
+    InstanceId:
+        Description: "The ID of the EC2 Instance"
+        Value: !Ref EC2Instance
+        Export:
+            Name: !Sub "${Prefix}-InstanceId"
 
-  InstancePublicIp:
-    Description: "Public IP of EC2 instance"
-    Value: !GetAtt EC2Instance.PublicIp
+    InstancePublicIp:
+        Description: "Public IP of EC2 instance"
+        Value: !GetAtt EC2Instance.PublicIp
 
-  SecurityGroupId:
-    Description: "The ID of the EC2 Security Group"
-    Value: !Ref EC2SecurityGroup1
-    Export:
-        Name: !Sub "${Prefix}-SecurityGroupId"
+    SecurityGroupId:
+        Description: "The ID of the EC2 Security Group"
+        Value: !Ref EC2SecurityGroup1
+        Export:
+            Name: !Sub "${Prefix}-SecurityGroupId"
 
-  KeyName:
-    Description: "Name of the generated key pair"
-    Value: !Ref EC2KeyPair
+    KeyName:
+        Description: "Name of the generated key pair"
+        Value: !Ref EC2KeyPair
