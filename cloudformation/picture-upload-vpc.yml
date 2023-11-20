@@ -2,9 +2,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "VPC"
 
 Parameters:
-  Prefix:
-    Type: String
-    Description: Fill in the part that hits the prefix to give a unique name.
+    Prefix:
+        Type: String
+        Description: Fill in the part that hits the prefix to give a unique name.
 
 Resources:
     EC2VPC:
@@ -14,10 +14,9 @@ Resources:
             EnableDnsSupport: true
             EnableDnsHostnames: true
             InstanceTenancy: "default"
-            Tags: 
-              - 
-                Key: "Name"
-                Value: !Sub ${Prefix}-ec2vpc
+            Tags:
+                - Key: "Name"
+                  Value: !Sub ${Prefix}-ec2vpc
 
     EC2Subnet1:
         Type: "AWS::EC2::Subnet"
@@ -26,10 +25,9 @@ Resources:
             CidrBlock: "10.0.16.0/20"
             VpcId: !Ref EC2VPC
             MapPublicIpOnLaunch: false
-            Tags: 
-              - 
-                Key: "Name"
-                Value: !Sub "raise10-subnet-public2-${EC2Subnet2.AvailabilityZone}"
+            Tags:
+                - Key: "Name"
+                  Value: !Sub "raise10-subnet-public2-${EC2Subnet2.AvailabilityZone}"
 
     EC2Subnet2:
         Type: "AWS::EC2::Subnet"
@@ -38,10 +36,9 @@ Resources:
             CidrBlock: "10.0.144.0/20"
             VpcId: !Ref EC2VPC
             MapPublicIpOnLaunch: false
-            Tags: 
-              - 
-                Key: "Name"
-                Value: !Sub "raise10-subnet-private2-${AWS::Region}b"
+            Tags:
+                - Key: "Name"
+                  Value: !Sub "raise10-subnet-private2-${AWS::Region}b"
 
     EC2Subnet3:
         Type: "AWS::EC2::Subnet"
@@ -50,10 +47,9 @@ Resources:
             CidrBlock: "10.0.128.0/20"
             VpcId: !Ref EC2VPC
             MapPublicIpOnLaunch: false
-            Tags: 
-              - 
-                Key: "Name"
-                Value: !Sub "raise10-subnet-private1-${EC2Subnet4.AvailabilityZone}"
+            Tags:
+                - Key: "Name"
+                  Value: !Sub "raise10-subnet-private1-${EC2Subnet4.AvailabilityZone}"
 
     EC2Subnet4:
         Type: "AWS::EC2::Subnet"
@@ -62,23 +58,21 @@ Resources:
             CidrBlock: "10.0.0.0/20"
             VpcId: !Ref EC2VPC
             MapPublicIpOnLaunch: false
-            Tags: 
-              - 
-                Key: "Name"
-                Value: !Sub "raise10-subnet-public1-${AWS::Region}a"
+            Tags:
+                - Key: "Name"
+                  Value: !Sub "raise10-subnet-public1-${AWS::Region}a"
 
     EC2InternetGateway:
         Type: "AWS::EC2::InternetGateway"
         Properties:
-            Tags: 
-              - 
-                Key: "Name"
-                Value: !Sub ${Prefix}-igw
+            Tags:
+                - Key: "Name"
+                  Value: !Sub ${Prefix}-igw
 
     EC2DHCPOptions:
         Type: "AWS::EC2::DHCPOptions"
         Properties:
-            DomainName: "ec2.internal" 
+            DomainName: "ec2.internal"
             DomainNameServers:
                 - AmazonProvidedDNS
 
@@ -97,28 +91,25 @@ Resources:
         Type: "AWS::EC2::RouteTable"
         Properties:
             VpcId: !Ref EC2VPC
-            Tags: 
-              - 
-                Key: "Name"
-                Value: !Sub "raise10-rtb-private1-${EC2Subnet3.AvailabilityZone}"
+            Tags:
+                - Key: "Name"
+                  Value: !Sub "raise10-rtb-private1-${EC2Subnet3.AvailabilityZone}"
 
     EC2RouteTable3:
         Type: "AWS::EC2::RouteTable"
         Properties:
             VpcId: !Ref EC2VPC
-            Tags: 
-              - 
-                Key: "Name"
-                Value: !Sub "raise10-rtb-private2-${EC2Subnet1.AvailabilityZone}"
+            Tags:
+                - Key: "Name"
+                  Value: !Sub "raise10-rtb-private2-${EC2Subnet1.AvailabilityZone}"
 
     EC2RouteTable4:
         Type: "AWS::EC2::RouteTable"
         Properties:
             VpcId: !Ref EC2VPC
-            Tags: 
-              - 
-                Key: "Name"
-                Value: !Sub ${Prefix}-routetable
+            Tags:
+                - Key: "Name"
+                  Value: !Sub ${Prefix}-routetable
 
     EC2Route:
         Type: "AWS::EC2::Route"
@@ -157,7 +148,6 @@ Resources:
             RouteTableId: !Ref EC2RouteTable2
             SubnetId: !Ref EC2Subnet3
 
-    
 Outputs:
     VPCID:
         Description: "The ID of the created VPC"

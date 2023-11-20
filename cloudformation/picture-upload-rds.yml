@@ -2,15 +2,15 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: "RDS"
 
 Parameters:
-  Prefix:
-    Type: String
-    Description: Fill in the part that hits the prefix to give a unique name.
-  VPCPrefix:
-    Type: String
-    Description: Fill in the prefixes listed in the VPC.
-  EC2Prefix:
-    Type: String
-    Description: Fill in the prefixes listed in the EC2.
+    Prefix:
+        Type: String
+        Description: Fill in the part that hits the prefix to give a unique name.
+    VPCPrefix:
+        Type: String
+        Description: Fill in the prefixes listed in the VPC.
+    EC2Prefix:
+        Type: String
+        Description: Fill in the prefixes listed in the EC2.
 
 Resources:
     RDSDBInstance:
@@ -23,7 +23,7 @@ Resources:
             DBInstanceClass: "db.t3.micro"
             Engine: "mysql"
             MasterUsername: "admin"
-            MasterUserPassword: '{{resolve:ssm-secure:picture-upload}}'
+            MasterUserPassword: "{{resolve:ssm-secure:rds_master_password}}"
             PreferredBackupWindow: "08:19-08:49"
             BackupRetentionPeriod: 1
             AvailabilityZone: !Sub "${AWS::Region}b"
@@ -42,8 +42,8 @@ Resources:
             EnablePerformanceInsights: false
             DeletionProtection: false
             DBSubnetGroupName: !Ref RDSDBSubnetGroup
-            VPCSecurityGroups: 
-              - !Ref RDSSecurityGroup1
+            VPCSecurityGroups:
+                - !Ref RDSSecurityGroup1
             DBParameterGroupName: "default.mysql8.0"
             OptionGroupName: "default:mysql-8-0"
             CACertificateIdentifier: "rds-ca-2019"
@@ -53,10 +53,10 @@ Resources:
         Properties:
             DBSubnetGroupDescription: "RDS-subnetgroup"
             DBSubnetGroupName: !Sub ${Prefix}-subnet-group
-            SubnetIds: 
-              - !ImportValue
+            SubnetIds:
+                - !ImportValue
                   "Fn::Sub": "${VPCPrefix}-SubnetId2"
-              - !ImportValue
+                - !ImportValue
                   "Fn::Sub": "${VPCPrefix}-SubnetId3"
 
     RDSSecurityGroup1:
@@ -64,22 +64,20 @@ Resources:
         Properties:
             GroupDescription: "rds-securitygroup1"
             VpcId: !ImportValue
-              "Fn::Sub": "${VPCPrefix}-VPCID"
-            SecurityGroupIngress: 
-              - 
-                SourceSecurityGroupId: !ImportValue
-                  "Fn::Sub": "${EC2Prefix}-SecurityGroupId"
-                SourceSecurityGroupOwnerId: !Ref AWS::AccountId
-                Description: "3306 tcp"
-                FromPort: 3306
-                IpProtocol: "tcp"
-                ToPort: 3306
-            SecurityGroupEgress: 
-              - 
-                CidrIp: "0.0.0.0/0"
-                IpProtocol: "-1"
+                "Fn::Sub": "${VPCPrefix}-VPCID"
+            SecurityGroupIngress:
+                - SourceSecurityGroupId: !ImportValue
+                      "Fn::Sub": "${EC2Prefix}-SecurityGroupId"
+                  SourceSecurityGroupOwnerId: !Ref AWS::AccountId
+                  Description: "3306 tcp"
+                  FromPort: 3306
+                  IpProtocol: "tcp"
+                  ToPort: 3306
+            SecurityGroupEgress:
+                - CidrIp: "0.0.0.0/0"
+                  IpProtocol: "-1"
 
 Outputs:
-  RDSInstanceEndpoint:
-    Description: "The endpoint address of the RDS instance"
-    Value: !GetAtt RDSDBInstance.Endpoint.Address
+    RDSInstanceEndpoint:
+        Description: "The endpoint address of the RDS instance"
+        Value: !GetAtt RDSDBInstance.Endpoint.Address
