@@ -221,6 +221,15 @@ jobs:
                       IdentitiesOnly yes
                     EOS
             - run:
+                  name: Check SSH Config File
+                  command: |
+                      ls -l ~/.ssh/config
+                      cat ~/.ssh/config
+            - run:
+                  name: Check SSH Key File
+                  command: |
+                      ls -l ~/.ssh/new-key-pair.pem
+            - run:
                   name: install serverspec
                   command: |
                     sudo apt-get update
