@@ -229,10 +229,15 @@ jobs:
                     sudo gem install ed25519
                     sudo gem install bcrypt_pbkdf
             - run:
+                name: List Rake tasks
+                command: |
+                  cd serverspec
+                  rake --tasks
+            - run:
                   name: run serverspec
                   command: |
                     cd serverspec
-                    rake spec:raise13-ec2
+                    rake spec:raise13-ec2 --trace
 
 
 workflows:
