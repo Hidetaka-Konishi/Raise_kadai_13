@@ -212,7 +212,7 @@ jobs:
             - run:
                   name: Setup SSH Config for Serverspec
                   command: |
-                    cat << EOS >  ~/.ssh/config
+                    cat \<< EOS >  ~/.ssh/config
                     Host raise13-ec2
                       Hostname $INSTANCE_PUBLIC_IP
                       User ec2-user
