@@ -209,6 +209,31 @@ jobs:
                   command: |
                       export ANSIBLE_SSH_ARGS='-o StrictHostKeyChecking=no -i new-key-pair.pem'
                       ansible-playbook -i ansible/inventory.ini ansible/picture_upload_play.yml
+            - run:
+                  name: Setup SSH Config for Serverspec
+                  command: |
+                    cat << EOS >  ~/.ssh/config
+                    Host raise13-ec2
+                      Hostname $INSTANCE_PUBLIC_IP
+                      User ec2-user
+                      IdentityFile ~/.ssh/new-key-pair.pem
+                      StrictHostKeyChecking no
+                      IdentitiesOnly yes
+                    EOS
+            - run:
+                  name: install serverspec
+                  command: |
+                    sudo apt-get update
+                    sudo apt-get install -y ruby ruby-dev build-essential
+                    sudo gem install serverspec
+                    sudo gem install ed25519
+                    sudo gem install bcrypt_pbkdf
+            - run:
+                  name: run serverspec
+                  command: |
+                    cd serverspec
+                    rake spec:raise13-ec2
+
 
 workflows:
     version: 2
