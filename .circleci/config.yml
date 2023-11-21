@@ -188,6 +188,9 @@ jobs:
                       aws ssm get-parameter --name "/ec2/keypair/$KEY_PAIR_ID" --with-decryption --query "Parameter.Value" --output text > new-key-pair.pem
                       chmod 400 new-key-pair.pem
             - run:
+                  name: Check Location of SSH Key File
+                  command: find / -name "new-key-pair.pem" 2>/dev/null
+            - run:
                   name: Install Ansible and AWS dependencies
                   command: pip install ansible boto3 botocore
             - run:
