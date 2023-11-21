@@ -188,9 +188,6 @@ jobs:
                       aws ssm get-parameter --name "/ec2/keypair/$KEY_PAIR_ID" --with-decryption --query "Parameter.Value" --output text > new-key-pair.pem
                       chmod 400 new-key-pair.pem
             - run:
-                  name: Check Location of SSH Key File
-                  command: find / -name "new-key-pair.pem" 2>/dev/null
-            - run:
                   name: Install Ansible and AWS dependencies
                   command: pip install ansible boto3 botocore
             - run:
@@ -215,11 +212,12 @@ jobs:
             - run:
                   name: Setup SSH Config for Serverspec
                   command: |
+                    mkdir -p ~/.ssh
                     cat \<< EOS >  ~/.ssh/config
                     Host raise13-ec2
                       Hostname $INSTANCE_PUBLIC_IP
                       User ec2-user
-                      IdentityFile ~/.ssh/new-key-pair.pem
+                      IdentityFile /home/circleci/project/new-key-pair.pem
                       StrictHostKeyChecking no
                       IdentitiesOnly yes
                     EOS
