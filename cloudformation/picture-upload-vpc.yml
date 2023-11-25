@@ -27,7 +27,7 @@ Resources:
             MapPublicIpOnLaunch: false
             Tags:
                 - Key: "Name"
-                  Value: !Sub "raise10-subnet-public2-${PrivateSubnet2.AvailabilityZone}"
+                  Value: !Sub "${Prefix}-subnet-public2-${PrivateSubnet2.AvailabilityZone}"
 
     PrivateSubnet2:
         Type: "AWS::EC2::Subnet"
@@ -38,7 +38,7 @@ Resources:
             MapPublicIpOnLaunch: false
             Tags:
                 - Key: "Name"
-                  Value: !Sub "raise10-subnet-private2-${AWS::Region}b"
+                  Value: !Sub "${Prefix}-subnet-private2-${AWS::Region}b"
 
     PrivateSubnet1:
         Type: "AWS::EC2::Subnet"
@@ -49,7 +49,7 @@ Resources:
             MapPublicIpOnLaunch: false
             Tags:
                 - Key: "Name"
-                  Value: !Sub "raise10-subnet-private1-${PublicSubnet2.AvailabilityZone}"
+                  Value: !Sub "${Prefix}-subnet-private1-${PublicSubnet2.AvailabilityZone}"
 
     PublicSubnet2:
         Type: "AWS::EC2::Subnet"
@@ -60,7 +60,7 @@ Resources:
             MapPublicIpOnLaunch: false
             Tags:
                 - Key: "Name"
-                  Value: !Sub "raise10-subnet-public1-${AWS::Region}a"
+                  Value: !Sub "${Prefix}-subnet-public1-${AWS::Region}a"
 
     InternetGateway:
         Type: "AWS::EC2::InternetGateway"
@@ -93,7 +93,7 @@ Resources:
             VpcId: !Ref MyVPC
             Tags:
                 - Key: "Name"
-                  Value: !Sub "raise10-rtb-private1-${PrivateSubnet1.AvailabilityZone}"
+                  Value: !Sub "${Prefix}-rtb-private1-${PrivateSubnet1.AvailabilityZone}"
 
     RouteTable3:
         Type: "AWS::EC2::RouteTable"
@@ -101,7 +101,7 @@ Resources:
             VpcId: !Ref MyVPC
             Tags:
                 - Key: "Name"
-                  Value: !Sub "raise10-rtb-private2-${PublicSubnet1.AvailabilityZone}"
+                  Value: !Sub "${Prefix}-rtb-private2-${PublicSubnet1.AvailabilityZone}"
 
     RouteTable4:
         Type: "AWS::EC2::RouteTable"
