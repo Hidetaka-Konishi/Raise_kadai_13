@@ -159,25 +159,25 @@ Outputs:
         Description: "The ID of the first subnet"
         Value: !Ref EC2Subnet1
         Export:
-            Name: !Sub "${Prefix}-SubnetId1"
+            Name: !Sub "${Prefix}-SubnetId1-Public"
 
     SubnetId2:
         Description: "The ID of the second subnet"
         Value: !Ref EC2Subnet2
         Export:
-            Name: !Sub "${Prefix}-SubnetId2"
+            Name: !Sub "${Prefix}-SubnetId2-Private"
 
     SubnetId3:
         Description: "The ID of the third subnet"
         Value: !Ref EC2Subnet3
         Export:
-            Name: !Sub "${Prefix}-SubnetId3"
+            Name: !Sub "${Prefix}-SubnetId3-Private"
 
     SubnetId4:
         Description: "The ID of the fourth subnet"
         Value: !Ref EC2Subnet4
         Export:
-            Name: !Sub "${Prefix}-SubnetId4"
+            Name: !Sub "${Prefix}-SubnetId4-Public"
 
     RegionName:
         Description: "Name of the AWS Region"
