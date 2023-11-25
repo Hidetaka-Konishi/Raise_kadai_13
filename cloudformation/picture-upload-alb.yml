@@ -105,7 +105,7 @@ Resources:
                   Value: "round_robin"
             Targets:
                 - Id: !ImportValue
-                      "Fn::Sub": "${EC2Prefix}-InstanceId"
+                      "Fn::Sub": "${Prefix}-InstanceId"
                   Port: 8080
 
     ALBSecurityGroup1:
@@ -113,7 +113,7 @@ Resources:
         Properties:
             GroupDescription: "alb-securitygroup1"
             VpcId: !ImportValue
-                "Fn::Sub": "${VPCPrefix}-VPCID"
+                "Fn::Sub": "${Prefix}-VPCID"
             SecurityGroupIngress:
                 - CidrIp: "0.0.0.0/0"
                   FromPort: 80
