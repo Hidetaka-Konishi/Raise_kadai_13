@@ -4,10 +4,7 @@ Description: "EC2"
 Parameters:
     Prefix:
         Type: String
-        Description: Fill in the part that hits the prefix to give a unique name.
-    VPCPrefix:
-        Type: String
-        Description: Fill in the prefixes listed in the VPC.
+        Description: Fill in the prefix to give a unique name to all resources.
 
 Resources:
     EC2KeyPair:
@@ -20,7 +17,7 @@ Resources:
             NetworkInterfaces:
                 - DeviceIndex: "0"
                   SubnetId: !ImportValue
-                      "Fn::Sub": "${VPCPrefix}-SubnetId1"
+                      "Fn::Sub": "${Prefix}-SubnetId1"
                   GroupSet:
                       - !Ref EC2SecurityGroup1
                   AssociatePublicIpAddress: true
@@ -78,7 +75,7 @@ Resources:
         Properties:
             GroupDescription: "ec2-securitygroup1"
             VpcId: !ImportValue
-                "Fn::Sub": "${VPCPrefix}-VPCID"
+                "Fn::Sub": "${Prefix}-VPCID"
             SecurityGroupIngress:
                 - CidrIp: "0.0.0.0/0"
                   FromPort: 8080

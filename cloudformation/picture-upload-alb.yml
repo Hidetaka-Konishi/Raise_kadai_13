@@ -4,13 +4,7 @@ Description: "ALB"
 Parameters:
     Prefix:
         Type: String
-        Description: Fill in the part that hits the prefix to give a unique name.
-    VPCPrefix:
-        Type: String
-        Description: Fill in the prefixes listed in the VPC.
-    EC2Prefix:
-        Type: String
-        Description: Fill in the prefixes listed in the EC2.
+        Description: Fill in the prefix to give a unique name to all resources.
 
 Resources:
     ElasticLoadBalancingV2LoadBalancer:
@@ -21,9 +15,9 @@ Resources:
             Type: "application"
             Subnets:
                 - !ImportValue
-                  "Fn::Sub": "${VPCPrefix}-SubnetId1"
+                  "Fn::Sub": "${Prefix}-SubnetId1"
                 - !ImportValue
-                  "Fn::Sub": "${VPCPrefix}-SubnetId4"
+                  "Fn::Sub": "${Prefix}-SubnetId4"
             SecurityGroups:
                 - !Ref ALBSecurityGroup1
             IpAddressType: "ipv4"
@@ -79,7 +73,7 @@ Resources:
                 HttpCode: "200"
             HealthyThresholdCount: 5
             VpcId: !ImportValue
-                "Fn::Sub": "${VPCPrefix}-VPCID"
+                "Fn::Sub": "${Prefix}-VPCID"
             Name: !Sub ${Prefix}-alb-targetgroup1
             HealthCheckEnabled: true
             TargetGroupAttributes:

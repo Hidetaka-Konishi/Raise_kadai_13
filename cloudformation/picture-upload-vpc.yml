@@ -16,7 +16,7 @@ Resources:
             InstanceTenancy: "default"
             Tags:
                 - Key: "Name"
-                  Value: !Sub ${Prefix}-ec2vpc
+                  Value: !Sub ${Prefix}-vpc
 
     EC2Subnet1:
         Type: "AWS::EC2::Subnet"

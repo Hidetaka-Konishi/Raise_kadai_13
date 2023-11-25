@@ -4,13 +4,7 @@ Description: "RDS"
 Parameters:
     Prefix:
         Type: String
-        Description: Fill in the part that hits the prefix to give a unique name.
-    VPCPrefix:
-        Type: String
-        Description: Fill in the prefixes listed in the VPC.
-    EC2Prefix:
-        Type: String
-        Description: Fill in the prefixes listed in the EC2.
+        Description: Fill in the prefix to give a unique name to all resources.
 
 Resources:
     RDSDBInstance:
@@ -55,19 +49,19 @@ Resources:
             DBSubnetGroupName: !Sub ${Prefix}-subnet-group
             SubnetIds:
                 - !ImportValue
-                  "Fn::Sub": "${VPCPrefix}-SubnetId2"
+                  "Fn::Sub": "${Prefix}-SubnetId2"
                 - !ImportValue
-                  "Fn::Sub": "${VPCPrefix}-SubnetId3"
+                  "Fn::Sub": "${Prefix}-SubnetId3"
 
     RDSSecurityGroup1:
         Type: "AWS::EC2::SecurityGroup"
         Properties:
             GroupDescription: "rds-securitygroup1"
             VpcId: !ImportValue
-                "Fn::Sub": "${VPCPrefix}-VPCID"
+                "Fn::Sub": "${Prefix}-VPCID"
             SecurityGroupIngress:
                 - SourceSecurityGroupId: !ImportValue
-                      "Fn::Sub": "${EC2Prefix}-SecurityGroupId"
+                      "Fn::Sub": "${Prefix}-SecurityGroupId"
                   SourceSecurityGroupOwnerId: !Ref AWS::AccountId
                   Description: "3306 tcp"
                   FromPort: 3306
