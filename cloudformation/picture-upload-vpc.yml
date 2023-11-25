@@ -21,35 +21,13 @@ Resources:
     PublicSubnet1:
         Type: "AWS::EC2::Subnet"
         Properties:
-            AvailabilityZone: !GetAtt PrivateSubnet2.AvailabilityZone
+            AvailabilityZone: !Sub "${AWS::Region}b"
             CidrBlock: "10.0.16.0/20"
             VpcId: !Ref MyVPC
             MapPublicIpOnLaunch: false
             Tags:
                 - Key: "Name"
-                  Value: !Sub "${Prefix}-subnet-public2-${PrivateSubnet2.AvailabilityZone}"
-
-    PrivateSubnet2:
-        Type: "AWS::EC2::Subnet"
-        Properties:
-            AvailabilityZone: !Sub "${AWS::Region}b"
-            CidrBlock: "10.0.144.0/20"
-            VpcId: !Ref MyVPC
-            MapPublicIpOnLaunch: false
-            Tags:
-                - Key: "Name"
-                  Value: !Sub "${Prefix}-subnet-private2-${AWS::Region}b"
-
-    PrivateSubnet1:
-        Type: "AWS::EC2::Subnet"
-        Properties:
-            AvailabilityZone: !GetAtt PublicSubnet2.AvailabilityZone
-            CidrBlock: "10.0.128.0/20"
-            VpcId: !Ref MyVPC
-            MapPublicIpOnLaunch: false
-            Tags:
-                - Key: "Name"
-                  Value: !Sub "${Prefix}-subnet-private1-${PublicSubnet2.AvailabilityZone}"
+                  Value: !Sub "${Prefix}-subnet-public-1-${AWS::Region}a"
 
     PublicSubnet2:
         Type: "AWS::EC2::Subnet"
@@ -60,7 +38,29 @@ Resources:
             MapPublicIpOnLaunch: false
             Tags:
                 - Key: "Name"
-                  Value: !Sub "${Prefix}-subnet-public1-${AWS::Region}a"
+                  Value: !Sub "${Prefix}-subnet-public-2-${AWS::Region}b"
+
+    PrivateSubnet1:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            AvailabilityZone: !Sub "${AWS::Region}a"
+            CidrBlock: "10.0.128.0/20"
+            VpcId: !Ref MyVPC
+            MapPublicIpOnLaunch: false
+            Tags:
+                - Key: "Name"
+                  Value: !Sub "${Prefix}-subnet-private-1-${AWS::Region}a"
+
+    PrivateSubnet2:
+        Type: "AWS::EC2::Subnet"
+        Properties:
+            AvailabilityZone: !Sub "${AWS::Region}b"
+            CidrBlock: "10.0.144.0/20"
+            VpcId: !Ref MyVPC
+            MapPublicIpOnLaunch: false
+            Tags:
+                - Key: "Name"
+                  Value: !Sub "${Prefix}-subnet-private-2-${AWS::Region}b"
 
     InternetGateway:
         Type: "AWS::EC2::InternetGateway"
@@ -86,6 +86,9 @@ Resources:
         Type: "AWS::EC2::RouteTable"
         Properties:
             VpcId: !Ref MyVPC
+            Tags:
+                - Key: "Name"
+                  Value: !Sub "${Prefix}-rtb-public-1"
 
     RouteTable2:
         Type: "AWS::EC2::RouteTable"
@@ -93,7 +96,7 @@ Resources:
             VpcId: !Ref MyVPC
             Tags:
                 - Key: "Name"
-                  Value: !Sub "${Prefix}-rtb-private1-${PrivateSubnet1.AvailabilityZone}"
+                  Value: !Sub "${Prefix}-rtb-private-1"
 
     RouteTable3:
         Type: "AWS::EC2::RouteTable"
@@ -101,7 +104,7 @@ Resources:
             VpcId: !Ref MyVPC
             Tags:
                 - Key: "Name"
-                  Value: !Sub "${Prefix}-rtb-private2-${PublicSubnet1.AvailabilityZone}"
+                  Value: !Sub "${Prefix}-rtb-private-2"
 
     RouteTable4:
         Type: "AWS::EC2::RouteTable"
@@ -109,7 +112,7 @@ Resources:
             VpcId: !Ref MyVPC
             Tags:
                 - Key: "Name"
-                  Value: !Sub ${Prefix}-routetable
+                  Value: !Sub "${Prefix}-rtb-public-2"
 
     Route:
         Type: "AWS::EC2::Route"
