@@ -15,9 +15,9 @@ Resources:
             Type: "application"
             Subnets:
                 - !ImportValue
-                  "Fn::Sub": "${Prefix}-SubnetId1"
+                  "Fn::Sub": "${Prefix}-SubnetId1-Public"
                 - !ImportValue
-                  "Fn::Sub": "${Prefix}-SubnetId4"
+                  "Fn::Sub": "${Prefix}-SubnetId4-Public"
             SecurityGroups:
                 - !Ref ALBSecurityGroup1
             IpAddressType: "ipv4"

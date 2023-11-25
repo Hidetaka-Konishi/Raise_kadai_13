@@ -49,9 +49,9 @@ Resources:
             DBSubnetGroupName: !Sub ${Prefix}-subnet-group
             SubnetIds:
                 - !ImportValue
-                  "Fn::Sub": "${Prefix}-SubnetId2"
+                  "Fn::Sub": "${Prefix}-SubnetId2-Private"
                 - !ImportValue
-                  "Fn::Sub": "${Prefix}-SubnetId3"
+                  "Fn::Sub": "${Prefix}-SubnetId3-Private"
 
     RDSSecurityGroup1:
         Type: "AWS::EC2::SecurityGroup"

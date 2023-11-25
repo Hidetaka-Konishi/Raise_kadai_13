@@ -17,7 +17,7 @@ Resources:
             NetworkInterfaces:
                 - DeviceIndex: "0"
                   SubnetId: !ImportValue
-                      "Fn::Sub": "${Prefix}-SubnetId1"
+                      "Fn::Sub": "${Prefix}-SubnetId1-Public"
                   GroupSet:
                       - !Ref EC2SecurityGroup1
                   AssociatePublicIpAddress: true
