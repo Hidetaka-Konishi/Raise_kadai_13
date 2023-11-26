@@ -21,7 +21,7 @@ Resources:
     PublicSubnet1:
         Type: "AWS::EC2::Subnet"
         Properties:
-            AvailabilityZone: !Sub "${AWS::Region}b"
+            AvailabilityZone: !Sub "${AWS::Region}a"
             CidrBlock: "10.0.16.0/20"
             VpcId: !Ref MyVPC
             MapPublicIpOnLaunch: false
@@ -32,7 +32,7 @@ Resources:
     PublicSubnet2:
         Type: "AWS::EC2::Subnet"
         Properties:
-            AvailabilityZone: !Sub "${AWS::Region}a"
+            AvailabilityZone: !Sub "${AWS::Region}b"
             CidrBlock: "10.0.0.0/20"
             VpcId: !Ref MyVPC
             MapPublicIpOnLaunch: false
