@@ -20,7 +20,7 @@ Resources:
             MasterUserPassword: "{{resolve:ssm-secure:rds_master_password}}"
             PreferredBackupWindow: "08:19-08:49"
             BackupRetentionPeriod: 1
-            AvailabilityZone: !Sub "${AWS::Region}b"
+            AvailabilityZone: !Sub "${AWS::Region}a"
             PreferredMaintenanceWindow: "mon:03:52-mon:04:22"
             MultiAZ: false
             EngineVersion: "8.0.33"
