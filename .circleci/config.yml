@@ -3,9 +3,14 @@ version: 2.1
 orbs:
     aws-cli: circleci/aws-cli@4.0
 
+executors:
+    my-executor:
+        docker:
+            - image: circleci/python:3.10
+
 jobs:
     deploy-vpc:
-        executor: aws-cli/default
+        executor: my-executor
         steps:
             - checkout
             - aws-cli/install
@@ -19,7 +24,7 @@ jobs:
                         --capabilities CAPABILITY_NAMED_IAM
 
     deploy-ec2:
-        executor: aws-cli/default
+        executor: my-executor
         steps:
             - checkout
             - aws-cli/install
@@ -33,7 +38,7 @@ jobs:
                         --capabilities CAPABILITY_NAMED_IAM
 
     deploy-rds:
-        executor: aws-cli/default
+        executor: my-executor
         steps:
             - checkout
             - aws-cli/install
@@ -48,7 +53,7 @@ jobs:
                   no_output_timeout: 30m
 
     deploy-alb:
-        executor: aws-cli/default
+        executor: my-executor
         steps:
             - checkout
             - aws-cli/install
@@ -62,7 +67,7 @@ jobs:
                         --capabilities CAPABILITY_NAMED_IAM
 
     deploy-s3:
-        executor: aws-cli/default
+        executor: my-executor
         steps:
             - checkout
             - aws-cli/install
@@ -76,7 +81,7 @@ jobs:
                         --capabilities CAPABILITY_NAMED_IAM
 
     run-ansible:
-        executor: aws-cli/default
+        executor: my-executor
         steps:
             - checkout
             - aws-cli/install
@@ -134,9 +139,9 @@ jobs:
                       KEY_PAIR_ID=$(aws ec2 describe-key-pairs --filters Name=key-name,Values=$KEY_NAME --query "KeyPairs[*].KeyPairId" --output text)
                       aws ssm get-parameter --name "/ec2/keypair/$KEY_PAIR_ID" --with-decryption --query "Parameter.Value" --output text > new-key-pair.pem
                       chmod 400 new-key-pair.pem
-#            - run:
-#                  name: Install Ansible and AWS dependencies
-#                  command: pip install ansible boto3 botocore
+            - run:
+                  name: Install Ansible and AWS dependencies
+                  command: pip install ansible boto3 botocore
             - run:
                   name: Update Ansible Inventory
                   command: |
