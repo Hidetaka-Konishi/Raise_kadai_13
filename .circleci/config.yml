@@ -134,9 +134,9 @@ jobs:
                       KEY_PAIR_ID=$(aws ec2 describe-key-pairs --filters Name=key-name,Values=$KEY_NAME --query "KeyPairs[*].KeyPairId" --output text)
                       aws ssm get-parameter --name "/ec2/keypair/$KEY_PAIR_ID" --with-decryption --query "Parameter.Value" --output text > new-key-pair.pem
                       chmod 400 new-key-pair.pem
-            - run:
-                  name: Install Ansible and AWS dependencies
-                  command: pip install ansible boto3 botocore
+#            - run:
+#                  name: Install Ansible and AWS dependencies
+#                  command: pip install ansible boto3 botocore
             - run:
                   name: Update Ansible Inventory
                   command: |
