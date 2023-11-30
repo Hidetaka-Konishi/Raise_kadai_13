@@ -2,7 +2,6 @@
 - name: Install git on target hosts
   hosts: your_target_host_or_group
   become: yes
-
   tasks:
       - name: Install git
         yum:
@@ -25,7 +24,6 @@
 - name: Yum Update Playbook
   hosts: your_target_host_or_group
   become: yes
-
   tasks:
       - name: Run yum update
         yum:
@@ -106,7 +104,6 @@
 - name: Install mysql-devel
   hosts: your_target_host_or_group
   become: yes
-
   tasks:
       - name: Install mysql-devel package
         yum:
@@ -213,7 +210,6 @@
 - name: Install ImageMagick on target hosts
   hosts: your_target_host_or_group
   become: yes
-
   tasks:
       - name: Install ImageMagick
         yum:
@@ -338,4 +334,6 @@
   become_user: ec2-user
   tasks:
       - name: Execute bundle exec unicorn command
-        shell: cd /home/ec2-user/raisetech-live8-sample-app && bundle exec unicorn -c /home/ec2-user/raisetech-live8-sample-app/config/unicorn.rb -E development -D
+        shell:
+            cmd: bundle exec unicorn -c /home/ec2-user/raisetech-live8-sample-app/config/unicorn.rb -E development -D
+            chdir: /home/ec2-user/raisetech-live8-sample-app
