@@ -10,6 +10,7 @@
 
 - name: Remove existing directory and Clone the repository
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Remove existing directory
         file:
@@ -46,6 +47,7 @@
 
 - name: Run curl and gpg2 command
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Execute curl command and pipe to gpg2
         shell: curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
@@ -59,6 +61,7 @@
 
 - name: Install RVM and Ruby
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Install GPG keys for RVM
         shell: |
@@ -79,6 +82,7 @@
             line: "source ~/.rvm/scripts/rvm"
 
 - hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Check if Ruby {{ ruby_version }} is already installed
         shell: source ~/.rvm/scripts/rvm && rvm list | grep 'ruby-{{ ruby_version }}'
@@ -95,6 +99,7 @@
 
 - name: Install bundler
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Install bundler version {{ bundler_version }}
         shell: source ~/.rvm/scripts/rvm && gem install bundler -v {{ bundler_version }}
@@ -112,6 +117,7 @@
 
 - name: Bundle install
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: bundle install
         command:
@@ -124,17 +130,18 @@
       ansible_python_interpreter: /usr/bin/python3
   tasks:
       - name: Install pip3 if not exists
-        become: true
+        become: yes
         package:
             name: python3-pip
             state: present
 
       - name: Install PyMySQL
-        become: true
+        become: yes
         pip:
             name: PyMySQL
 
       - name: Create database
+        become: no
         mysql_db:
             name: "Raise13"
             state: present
@@ -144,6 +151,7 @@
 
 - name: Deploy database.yml from template
   hosts: your_target_host_or_group
+  become: no
   vars:
       database_table_name: "Raise13"
       database_username: "admin"
@@ -161,6 +169,7 @@
 
 - name: Execute curl command in /home/ec2-user/raisetech-live8-sample-app
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Execute curl command to install nvm
         shell: |
@@ -171,6 +180,7 @@
 
 - name: Set persistent environment variable
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Add export NVM_DIR="$HOME/.nvm" to .bashrc
         lineinfile:
@@ -180,6 +190,7 @@
 
 - name: Execute command in /home/ec2-user/raisetech-live8-sample-app
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Execute nvm command
         shell:
@@ -187,6 +198,7 @@
             chdir: /home/ec2-user/raisetech-live8-sample-app
 
 - hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Execute nvm install nodejs in specific directory
         shell: |
@@ -237,6 +249,7 @@
 
 - name: Change unicorn.rb
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Create unicorn.rb
         template:
@@ -289,6 +302,7 @@
 
 - name: Run RAILS_ENV=development bundle exec rake assets:precompile
   hosts: your_target_host_or_group
+  become: no
   tasks:
       - name: Execute rake assets:precompile
         shell:
