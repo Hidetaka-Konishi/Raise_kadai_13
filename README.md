@@ -6,7 +6,7 @@
 
 3. 以下のようにCircleCIの環境変数に保存する。 
 ### AWS_REGION
-スタックをデプロイしたいリージョン名（例　us-east-1）
+us-east-1
 ### AWS_ACCESS_KEY_ID
 2で作成したIAMユーザーのアクセスキー
 ### AWS_SECRET_ACCESS_KEY
