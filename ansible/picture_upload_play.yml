@@ -19,7 +19,7 @@
 
       - name: Clone the repository
         git:
-            repo: "https://github.com/yuta-ushijima/raisetech-live8-sample-app.git"
+            repo: "https://github.com/yuta-ushijima/raisetech-live8-sample-app/tree/562ccef8872552b1928e2d841017f5b90efea765"
             dest: "/home/ec2-user/raisetech-live8-sample-app"
 
 - name: Yum Update Playbook
