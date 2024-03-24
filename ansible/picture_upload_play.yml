@@ -8,19 +8,20 @@
             name: git
             state: present
 
-- name: Remove existing directory and Clone the repository
+- name: Remove existing directory and Clone the repository at a specific commit
   hosts: your_target_host_or_group
   become: no
   tasks:
-      - name: Remove existing directory
-        file:
-            path: "/home/ec2-user/raisetech-live8-sample-app"
-            state: absent
+    - name: Remove existing directory
+      file:
+        path: "/home/ec2-user/raisetech-live8-sample-app"
+        state: absent
 
-      - name: Clone the repository
-        git:
-            repo: "https://github.com/yuta-ushijima/raisetech-live8-sample-app/tree/562ccef8872552b1928e2d841017f5b90efea765"
-            dest: "/home/ec2-user/raisetech-live8-sample-app"
+    - name: Clone the repository at a specific commit
+      git:
+        repo: "https://github.com/yuta-ushijima/raisetech-live8-sample-app.git"
+        dest: "/home/ec2-user/raisetech-live8-sample-app"
+        version: "562ccef8872552b1928e2d841017f5b90efea765"
 
 - name: Yum Update Playbook
   hosts: your_target_host_or_group
